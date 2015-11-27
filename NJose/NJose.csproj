@@ -47,6 +47,8 @@
     <Compile Include="JoseHeader.cs" />
     <Compile Include="JsonWebToken.cs" />
     <Compile Include="JWA\IJsonWebAlgorithm.cs" />
+    <Compile Include="JWA\IJWADigitalSignature.cs" />
+    <Compile Include="JWA\NoneDigitalSignature.cs" />
     <Compile Include="JWS\IJsonWebSignatureSerializer.cs" />
     <Compile Include="JWS\InvalidJsonWebSignatureToken.cs" />
     <Compile Include="JWS\JWSCompactSerializer.cs" />

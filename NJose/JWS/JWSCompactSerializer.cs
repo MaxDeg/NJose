@@ -9,9 +9,9 @@ namespace NJose.JWS
 {
     public sealed class JWSCompactSerializer : IJsonWebSignatureSerializer
     {
-        private readonly IJsonWebAlgorithm algorithm;
+        private readonly IJWADigitalSignature algorithm;
 
-        public JWSCompactSerializer(IJsonWebAlgorithm algorithm)
+        public JWSCompactSerializer(IJWADigitalSignature algorithm)
         {
             this.algorithm = algorithm;
         }
@@ -23,7 +23,10 @@ namespace NJose.JWS
             var toSign = string.Join(".", header.ToJson().ToBase64Url(), token.ToJson().ToBase64Url());
             var signature = algorithm.Sign(Encoding.ASCII.GetBytes(toSign)).ToBase64Url();
 
-            return string.Join(".", toSign, signature);
+            if (signature == null)
+                return toSign;
+            else
+                return string.Join(".", toSign, signature);
         }
 
         public JsonWebToken Deserialize(string token)
@@ -40,15 +43,11 @@ namespace NJose.JWS
             if (this.algorithm.Name != header.Algorithm)
                 throw new InvalidJsonWebSignatureToken("Algorithms mismatch");
 
-            // special case for alg  == "none"
-            // else
-            if (splittedToken.Length != 3)
-                throw new InvalidJsonWebSignatureToken("invalid token format");
-
             var toSign = string.Join(".", splittedToken.Take(2));
             var signature = algorithm.Sign(Encoding.ASCII.GetBytes(toSign)).ToBase64Url();
 
-            if (splittedToken.Last() != signature)
+            // if Algorithm is none signature is null
+            if (splittedToken.Skip(2).SingleOrDefault() != signature)
                 throw new InvalidJsonWebSignatureToken("signatures mismatch");
 
             var jwt = new JsonWebToken(splittedToken[1]);

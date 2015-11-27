@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace NJose.JWA
 {
-    public interface IJsonWebAlgorithm
+    public interface IJWADigitalSignature : IJsonWebAlgorithm
     {
-        string Name { get; }
+        string Sign(byte[] content);
     }
 }
