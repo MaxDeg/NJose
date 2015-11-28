@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace NJose.Algorithms
 {
-    public sealed class NoneDigitalSignature : IJWADigitalSignature
+    public sealed class NoDigitalSignature : IJWADigitalSignature
     {
         private static readonly byte[] EmptyByteArray = new byte[0];
 

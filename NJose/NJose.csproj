@@ -55,7 +55,7 @@
     <Compile Include="Algorithms\HS512DigitalSignature.cs" />
     <Compile Include="Algorithms\IJsonWebAlgorithm.cs" />
     <Compile Include="Algorithms\IJWADigitalSignature.cs" />
-    <Compile Include="Algorithms\NoneDigitalSignature.cs" />
+    <Compile Include="Algorithms\NoDigitalSignature.cs" />
     <Compile Include="Algorithms\RS256DigitalSignature.cs" />
     <Compile Include="Algorithms\RSAPKCS1DigitalSignature.cs" />
     <Compile Include="Serialization\IJsonWebSignatureSerializer.cs" />

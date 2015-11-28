@@ -18,7 +18,8 @@ using NJose.Algorithms;
 using NJose.Extensions;
 using System;
 using System.Linq;
-using System.Text;
+
+using static System.Text.Encoding;
 
 namespace NJose.Serialization
 {
@@ -42,9 +43,9 @@ namespace NJose.Serialization
             var header = new JoseHeader { Algorithm = this.algorithm.Name };
 
             var toSign = string.Join(".", header.ToJson().ToBase64Url(), token.ToJson().ToBase64Url());
-            var signature = algorithm.Sign(Encoding.ASCII.GetBytes(toSign)).ToBase64Url();
+            var signature = algorithm.Sign(ASCII.GetBytes(toSign)).ToBase64Url();
 
-            if (signature == null)
+            if (string.IsNullOrEmpty(signature))
                 return toSign;
             else
                 return string.Join(".", toSign, signature);
@@ -61,21 +62,21 @@ namespace NJose.Serialization
             if (splittedToken.Length < 2)
                 throw new InvalidJsonWebSignatureToken("invalid token format");
 
-            var header = new JoseHeader(splittedToken[0]);
+            var header = new JoseHeader(UTF8.GetString(splittedToken[0].FromBase64Url()));
 
             // the algorithm must be the same to avoid vulnerabilities
             if (this.algorithm.Name != header.Algorithm)
                 throw new InvalidJsonWebSignatureToken("Algorithms mismatch");
 
             var toSign = string.Join(".", splittedToken.Take(2));
+            // if Algorithm is none signature is empty byte[]
+            // use select to avoid NullReferenceException
+            var signature = splittedToken.Skip(2).Select(s => s.FromBase64Url()).SingleOrDefault();
 
-            // if Algorithm is none signature is null
-            if (!this.algorithm.Verify(Encoding.ASCII.GetBytes(toSign), splittedToken.Skip(2).SingleOrDefault().FromBase64Url()))
+            if (!this.algorithm.Verify(ASCII.GetBytes(toSign), signature))
                 throw new InvalidJsonWebSignatureToken("signatures mismatch");
-
-            var jwt = new JsonWebToken(splittedToken[1]);
-
-            return jwt.IsValid ? jwt : null;
+            
+            return new JsonWebToken(UTF8.GetString(splittedToken[1].FromBase64Url()));
         }
 
         public void Dispose()

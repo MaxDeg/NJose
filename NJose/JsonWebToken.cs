@@ -27,11 +27,7 @@ namespace NJose
 
         public JsonWebToken()
         {
-            this.claims["iss"] = null;
-            this.claims["sub"] = null;
-            this.claims["aud"] = null;
-            this.claims["exp"] = null;
-            this.claims["nbf"] = null;
+            this.InitStandardClaims();
             this.claims["iat"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             this.claims["jti"] = Guid.NewGuid().ToString();
         }
@@ -41,8 +37,10 @@ namespace NJose
             if (token == null)
                 throw new ArgumentNullException(nameof(token));
 
+            this.InitStandardClaims();
+
             foreach (var pair in JsonConvert.DeserializeObject<Dictionary<string, object>>(token))
-                this.claims.Add(pair.Key, pair.Value);
+                this.claims[pair.Key] = pair.Value;
         }
 
         public string Issuer
@@ -89,7 +87,10 @@ namespace NJose
         {
             get
             {
-                return true; // TODO
+                var unixNow = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+                return (!this.NotBefore.HasValue || this.NotBefore.Value < unixNow) &&
+                    (!this.ExpirationTime.HasValue || this.ExpirationTime.Value > unixNow);
             }
         }
 
@@ -120,6 +121,17 @@ namespace NJose
         public string ToJson()
         {
             return JsonConvert.SerializeObject(this.claims.Where(c => c.Value != null).ToDictionary(c => c.Key, c => c.Value));
+        }
+
+        private void InitStandardClaims()
+        {
+            this.claims["iss"] = null;
+            this.claims["sub"] = null;
+            this.claims["aud"] = null;
+            this.claims["exp"] = null;
+            this.claims["nbf"] = null;
+            this.claims["iat"] = null;
+            this.claims["jti"] = null;
         }
     }
 }

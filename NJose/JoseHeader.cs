@@ -29,8 +29,8 @@ namespace NJose
 
         public JoseHeader()
         {
+            this.InitStandardClaims();
             this.headers["typ"] = "JWT";
-            this.headers["alg"] = null;
         }
 
         public JoseHeader(string token)
@@ -38,9 +38,11 @@ namespace NJose
             if (token == null)
                 throw new ArgumentNullException(nameof(token));
 
+            this.InitStandardClaims();
+
             // TODO skip unknown headers
             foreach (var pair in JsonConvert.DeserializeObject<Dictionary<string, object>>(token))
-                this.headers.Add(pair.Key, pair.Value);
+                this.headers[pair.Key] = pair.Value;
         }
 
         // typ
@@ -55,6 +57,12 @@ namespace NJose
         public string ToJson()
         {
             return JsonConvert.SerializeObject(this.headers.Where(c => c.Value != null).ToDictionary(c => c.Key, c => c.Value));
+        }
+
+        private void InitStandardClaims()
+        {
+            this.headers["typ"] = null;
+            this.headers["alg"] = null;
         }
     }
 }
