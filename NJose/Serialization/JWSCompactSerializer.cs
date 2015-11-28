@@ -45,10 +45,7 @@ namespace NJose.Serialization
             var toSign = string.Join(".", header.ToJson().ToBase64Url(), token.ToJson().ToBase64Url());
             var signature = algorithm.Sign(ASCII.GetBytes(toSign)).ToBase64Url();
 
-            if (string.IsNullOrEmpty(signature))
-                return toSign;
-            else
-                return string.Join(".", toSign, signature);
+            return string.IsNullOrEmpty(signature) ? toSign : string.Join(".", toSign, signature);
         }
 
         public JsonWebToken Deserialize(string token)
@@ -75,7 +72,7 @@ namespace NJose.Serialization
 
             if (!this.algorithm.Verify(ASCII.GetBytes(toSign), signature))
                 throw new InvalidJsonWebSignatureToken("signatures mismatch");
-            
+
             return new JsonWebToken(UTF8.GetString(splittedToken[1].FromBase64Url()));
         }
 

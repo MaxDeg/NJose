@@ -31,16 +31,14 @@ namespace NJose.Algorithms
         public byte[] Sign(byte[] content)
         {
             // No signature for this algorithm type ;)
-            return EmptyByteArray;
+            return null;
         }
 
         public bool Verify(byte[] content, byte[] signature)
         {
-            return EmptyByteArray.SequenceEqual(signature);
+            return signature == null || signature.Length == 0;
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }
