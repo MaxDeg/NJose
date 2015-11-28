@@ -25,14 +25,22 @@ namespace NJose.Algorithms
         private readonly string hashAlgorithm;
         private readonly AsymmetricAlgorithm publicKey;
         private readonly AsymmetricAlgorithm privateKey;
+        protected bool disposed;
 
         public RSAPKCS1DigitalSignature(string hashAlgorithm, X509Certificate2 certificate)
         {
+            if (hashAlgorithm == null)
+                throw new ArgumentNullException(nameof(hashAlgorithm));
+            if (certificate == null)
+                throw new ArgumentNullException(nameof(certificate));
+
             this.hashAlgorithm = hashAlgorithm;
+            this.disposed = false;
 
             if (!certificate.HasPrivateKey)
                 throw new ArgumentException("Private key not defined");
 
+            // TODO A key of size 2048 bits or larger MUST be used with these algorithms.
             this.publicKey = certificate.PublicKey.Key;
             this.privateKey = certificate.PrivateKey;
         }
@@ -41,6 +49,11 @@ namespace NJose.Algorithms
         
         public byte[] Sign(byte[] content)
         {
+            if (content == null || content.Length == 0)
+                throw new ArgumentNullException(nameof(content));
+            if (this.disposed)
+                throw new ObjectDisposedException(this.GetType().Name);
+
             RSAPKCS1SignatureFormatter rsaFormatter = new RSAPKCS1SignatureFormatter(this.privateKey);
             rsaFormatter.SetHashAlgorithm(this.hashAlgorithm);
 
@@ -49,12 +62,22 @@ namespace NJose.Algorithms
 
         public bool Verify(byte[] content, byte[] signature)
         {
+            if (content == null || content.Length == 0)
+                throw new ArgumentNullException(nameof(content));
+            if (signature == null || signature.Length == 0)
+                throw new ArgumentNullException(nameof(signature));
+            if (this.disposed)
+                throw new ObjectDisposedException(this.GetType().Name);
+
             RSAPKCS1SignatureDeformatter rsaDeformatter = new RSAPKCS1SignatureDeformatter(this.publicKey);
             rsaDeformatter.SetHashAlgorithm(this.hashAlgorithm);
 
             return rsaDeformatter.VerifySignature(content, signature);
         }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            this.disposed = true;
+        }
     }
 }

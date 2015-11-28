@@ -15,9 +15,10 @@
 ******************************************************************************/
 
 using NJose.Algorithms;
+using NJose.Extensions;
+using System;
 using System.Linq;
 using System.Text;
-using NJose.Extensions;
 
 namespace NJose.Serialization
 {
@@ -27,11 +28,17 @@ namespace NJose.Serialization
 
         public JWSCompactSerializer(IJWADigitalSignature algorithm)
         {
+            if (algorithm == null)
+                throw new ArgumentNullException(nameof(algorithm));
+
             this.algorithm = algorithm;
         }
 
         public string Serialize(JsonWebToken token)
         {
+            if (token == null)
+                throw new ArgumentNullException(nameof(token));
+
             var header = new JoseHeader { Algorithm = this.algorithm.Name };
 
             var toSign = string.Join(".", header.ToJson().ToBase64Url(), token.ToJson().ToBase64Url());
@@ -45,6 +52,9 @@ namespace NJose.Serialization
 
         public JsonWebToken Deserialize(string token)
         {
+            if (token == null)
+                throw new ArgumentNullException(nameof(token));
+
             var splittedToken = token.Split('.');
 
             // Minimal number of parts in a JWS compact token is 2 in case of "none" algorithm

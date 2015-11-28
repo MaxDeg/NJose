@@ -23,27 +23,46 @@ namespace NJose.Algorithms
     public abstract class HMACDigitalSignature : IJWADigitalSignature
     {
         protected readonly HMAC hashAlgorithm;
-        
+        protected bool disposed;
+
         public HMACDigitalSignature(HMAC hashAlgorithm)
         {
+            if (hashAlgorithm == null)
+                throw new ArgumentNullException(nameof(hashAlgorithm));
+
             this.hashAlgorithm = hashAlgorithm;
+            this.disposed = false;
         }
 
         public virtual string Name { get { throw new NotImplementedException(); } }
 
         public byte[] Sign(byte[] content)
         {
+            if (content == null || content.Length == 0)
+                throw new ArgumentNullException(nameof(content));
+            if (this.disposed)
+                throw new ObjectDisposedException(this.GetType().Name);
+
             return this.hashAlgorithm.ComputeHash(content);
         }
 
         public bool Verify(byte[] content, byte[] signature)
         {
+            if (content == null || content.Length == 0)
+                throw new ArgumentNullException(nameof(content));
+            if (signature == null || signature.Length == 0)
+                throw new ArgumentNullException(nameof(signature));
+            if (this.disposed)
+                throw new ObjectDisposedException(this.GetType().Name);
+
             return this.Sign(content).SequenceEqual(signature);
         }
 
         public void Dispose()
         {
             this.Dispose(true);
+            this.disposed = true;
+            
             GC.SuppressFinalize(this);
         }
 

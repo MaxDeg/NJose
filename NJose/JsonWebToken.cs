@@ -38,7 +38,11 @@ namespace NJose
 
         public JsonWebToken(string token)
         {
+            if (token == null)
+                throw new ArgumentNullException(nameof(token));
 
+            foreach (var pair in JsonConvert.DeserializeObject<Dictionary<string, object>>(token))
+                this.claims.Add(pair.Key, pair.Value);
         }
 
         public string Issuer

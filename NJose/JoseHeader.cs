@@ -35,7 +35,12 @@ namespace NJose
 
         public JoseHeader(string token)
         {
+            if (token == null)
+                throw new ArgumentNullException(nameof(token));
 
+            // TODO skip unknown headers
+            foreach (var pair in JsonConvert.DeserializeObject<Dictionary<string, object>>(token))
+                this.headers.Add(pair.Key, pair.Value);
         }
 
         // typ
