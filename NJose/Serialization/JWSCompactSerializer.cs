@@ -1,11 +1,25 @@
-﻿using NJose.JWA;
-using System;
-using System.Collections.Generic;
+﻿/******************************************************************************
+    Copyright 2015 Maxime Degallaix
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+******************************************************************************/
+
+using NJose.Algorithms;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using NJose.Extensions;
 
-namespace NJose.JWS
+namespace NJose.Serialization
 {
     public sealed class JWSCompactSerializer : IJsonWebSignatureSerializer
     {
@@ -44,15 +58,19 @@ namespace NJose.JWS
                 throw new InvalidJsonWebSignatureToken("Algorithms mismatch");
 
             var toSign = string.Join(".", splittedToken.Take(2));
-            var signature = algorithm.Sign(Encoding.ASCII.GetBytes(toSign)).ToBase64Url();
 
             // if Algorithm is none signature is null
-            if (splittedToken.Skip(2).SingleOrDefault() != signature)
+            if (!this.algorithm.Verify(Encoding.ASCII.GetBytes(toSign), splittedToken.Skip(2).SingleOrDefault().FromBase64Url()))
                 throw new InvalidJsonWebSignatureToken("signatures mismatch");
 
             var jwt = new JsonWebToken(splittedToken[1]);
-                        
+
             return jwt.IsValid ? jwt : null;
+        }
+
+        public void Dispose()
+        {
+            this.algorithm?.Dispose();
         }
     }
 }

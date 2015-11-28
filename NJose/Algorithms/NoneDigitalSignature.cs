@@ -14,42 +14,33 @@
     limitations under the License.
 ******************************************************************************/
 
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NJose
+namespace NJose.Algorithms
 {
-    internal sealed class JoseHeader
+    public sealed class NoneDigitalSignature : IJWADigitalSignature
     {
-        private readonly Dictionary<string, object> headers = new Dictionary<string, object>();
+        private static readonly byte[] EmptyByteArray = new byte[0];
 
-        public JoseHeader()
+        public string Name { get { return "none"; } }
+
+        public byte[] Sign(byte[] content)
         {
-            this.headers["typ"] = "JWT";
-            this.headers["alg"] = null;
+            // No signature for this algorithm type ;)
+            return EmptyByteArray;
         }
 
-        public JoseHeader(string token)
+        public bool Verify(byte[] content, byte[] signature)
         {
-
+            return EmptyByteArray.SequenceEqual(signature);
         }
 
-        // typ
-        public string Type { get { return (string)this.headers["typ"]; } }
-
-        public string Algorithm
+        public void Dispose()
         {
-            get { return (string)this.headers["alg"]; }
-            set { this.headers["alg"] = value; }
-        }
-
-        public string ToJson()
-        {
-            return JsonConvert.SerializeObject(this.headers.Where(c => c.Value != null).ToDictionary(c => c.Key, c => c.Value));
         }
     }
 }

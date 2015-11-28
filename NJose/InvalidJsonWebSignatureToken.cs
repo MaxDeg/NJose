@@ -14,42 +14,28 @@
     limitations under the License.
 ******************************************************************************/
 
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Serialization;
 
 namespace NJose
 {
-    internal sealed class JoseHeader
+    [Serializable]
+    internal class InvalidJsonWebSignatureToken : Exception
     {
-        private readonly Dictionary<string, object> headers = new Dictionary<string, object>();
-
-        public JoseHeader()
+        public InvalidJsonWebSignatureToken()
         {
-            this.headers["typ"] = "JWT";
-            this.headers["alg"] = null;
         }
 
-        public JoseHeader(string token)
+        public InvalidJsonWebSignatureToken(string message) : base(message)
         {
-
         }
 
-        // typ
-        public string Type { get { return (string)this.headers["typ"]; } }
-
-        public string Algorithm
+        public InvalidJsonWebSignatureToken(string message, Exception innerException) : base(message, innerException)
         {
-            get { return (string)this.headers["alg"]; }
-            set { this.headers["alg"] = value; }
         }
 
-        public string ToJson()
+        protected InvalidJsonWebSignatureToken(SerializationInfo info, StreamingContext context) : base(info, context)
         {
-            return JsonConvert.SerializeObject(this.headers.Where(c => c.Value != null).ToDictionary(c => c.Key, c => c.Value));
         }
     }
 }

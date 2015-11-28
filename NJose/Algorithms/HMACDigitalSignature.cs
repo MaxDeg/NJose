@@ -14,42 +14,41 @@
     limitations under the License.
 ******************************************************************************/
 
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Security.Cryptography;
 
-namespace NJose
+namespace NJose.Algorithms
 {
-    internal sealed class JoseHeader
+    public abstract class HMACDigitalSignature : IJWADigitalSignature
     {
-        private readonly Dictionary<string, object> headers = new Dictionary<string, object>();
-
-        public JoseHeader()
+        protected readonly HMAC hashAlgorithm;
+        
+        public HMACDigitalSignature(HMAC hashAlgorithm)
         {
-            this.headers["typ"] = "JWT";
-            this.headers["alg"] = null;
+            this.hashAlgorithm = hashAlgorithm;
         }
 
-        public JoseHeader(string token)
-        {
+        public virtual string Name { get { throw new NotImplementedException(); } }
 
+        public byte[] Sign(byte[] content)
+        {
+            return this.hashAlgorithm.ComputeHash(content);
         }
 
-        // typ
-        public string Type { get { return (string)this.headers["typ"]; } }
-
-        public string Algorithm
+        public bool Verify(byte[] content, byte[] signature)
         {
-            get { return (string)this.headers["alg"]; }
-            set { this.headers["alg"] = value; }
+            return this.Sign(content).SequenceEqual(signature);
         }
 
-        public string ToJson()
+        public void Dispose()
         {
-            return JsonConvert.SerializeObject(this.headers.Where(c => c.Value != null).ToDictionary(c => c.Key, c => c.Value));
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
         }
     }
 }
