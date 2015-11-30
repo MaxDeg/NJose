@@ -55,10 +55,10 @@ namespace NJose
             set { this.claims["sub"] = value; }
         }
 
-        public string Audience
+        // Aray or single value ... need converter
+        public IList<string> Audience
         {
-            get { return (string)this.claims["aud"]; }
-            set { this.claims["aud"] = value; }
+            get { return (IList<string>)this.claims["aud"]; }
         }
 
         public long? ExpirationTime
@@ -127,7 +127,7 @@ namespace NJose
         {
             this.claims["iss"] = null;
             this.claims["sub"] = null;
-            this.claims["aud"] = null;
+            this.claims["aud"] = new List<string>();
             this.claims["exp"] = null;
             this.claims["nbf"] = null;
             this.claims["iat"] = null;

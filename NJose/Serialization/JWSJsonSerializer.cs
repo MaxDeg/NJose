@@ -16,10 +16,7 @@
 
 using NJose.Algorithms;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NJose.Serialization
 {
@@ -37,6 +34,7 @@ namespace NJose.Serialization
 
         public string Serialize(JsonWebToken token)
         {
+            // sign token with all algorithm in the order
             throw new NotImplementedException();
         }
 

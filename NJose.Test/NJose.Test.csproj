@@ -55,6 +55,7 @@
     <Compile Include="JWSSerializationUnitTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JsonWebTokenUnitTest.cs" />
+    <Compile Include="JoseHeaderUnitTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NJose\NJose.csproj">

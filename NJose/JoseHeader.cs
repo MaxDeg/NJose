@@ -15,54 +15,119 @@
 ******************************************************************************/
 
 using Newtonsoft.Json;
+using NJose.JsonSerialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace NJose
 {
-    internal sealed class JoseHeader
+    public sealed class JoseHeader
     {
+        // Extension headers - must be defined in critical header
+        [JsonExtensionData]
         private readonly Dictionary<string, object> headers = new Dictionary<string, object>();
 
         public JoseHeader()
         {
-            this.InitStandardClaims();
-            this.headers["typ"] = "JWT";
+            this.X509CertificateChain = new HashSet<string>();
+            this.Critical = new HashSet<string>();
         }
 
-        public JoseHeader(string token)
+        [Obsolete]
+        public JoseHeader(string token) { }
+
+        [JsonProperty("alg")]
+        public string Algorithm { get; internal set; }
+
+        [JsonProperty("typ"), JsonConverter(typeof(JoseTypeHeaderConverter))]
+        public string Type { get; set; }
+
+        [JsonProperty("cty"), JsonConverter(typeof(JoseTypeHeaderConverter))]
+        public string ContentType { get; set; }
+
+        [JsonProperty("jku")]
+        public Uri JwkSetUrl { get; set; }
+
+        [JsonProperty("jwk")]
+        public string JsonWebKey { get; set; }
+
+        [JsonProperty("kid")]
+        public string KeyId { get; set; }
+
+        [JsonProperty("x5u")]
+        public Uri X509Url { get; set; }
+
+        [JsonProperty("x5c")]
+        public ISet<string> X509CertificateChain { get; private set; }
+        
+        [JsonProperty("x5t")]
+        public string X509Thumbprint { get; set; }
+
+        [JsonProperty("crit")]
+        internal ISet<string> Critical { get; private set; }
+        
+        public object this[string key]
         {
-            if (token == null)
-                throw new ArgumentNullException(nameof(token));
-
-            this.InitStandardClaims();
-
-            // TODO skip unknown headers
-            foreach (var pair in JsonConvert.DeserializeObject<Dictionary<string, object>>(token))
-                this.headers[pair.Key] = pair.Value;
+            get { return this.headers[key]; }
+            set { this.Add(key, value); }
         }
 
-        // typ
-        public string Type { get { return (string)this.headers["typ"]; } }
-
-        public string Algorithm
+        public void Add(string key, object value)
         {
-            get { return (string)this.headers["alg"]; }
-            set { this.headers["alg"] = value; }
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (value == null) throw new ArgumentNullException(nameof(value));
+
+            if (!this.Critical.Contains(key))
+                this.Critical.Add(key);
+
+            this.headers[key] = value;
+        }
+
+        public void Remove(string key)
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+
+            this.Critical.Remove(key);
+            this.headers.Remove(key);
         }
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this.headers.Where(c => c.Value != null).ToDictionary(c => c.Key, c => c.Value));
+            return JsonConvert.SerializeObject(this, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                ContractResolver = new EmptyCollectionContractResolver()
+            });
         }
 
-        private void InitStandardClaims()
+        public static JoseHeader Parse(string token)
         {
-            this.headers["typ"] = null;
-            this.headers["alg"] = null;
+            if (token == null)
+                throw new ArgumentNullException(nameof(token));
+
+            var joseHeader = JsonConvert.DeserializeObject<JoseHeader>(token, new JsonSerializerSettings
+            {
+            });
+
+            return joseHeader;
+        }
+
+        public bool ShouldSerializeCritical() => this.Critical.Count > 0;
+        public bool ShouldSerializeX509CertificateChain() => this.X509CertificateChain.Count > 0;
+
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context)
+        {
+            if (this.headers.Count != this.Critical.Count)
+                throw new InvalidJoseHeaderException();
+
+            foreach (var key in this.headers.Keys)
+                if (!this.Critical.Contains(key))
+                    throw new InvalidJoseHeaderException(key);
         }
     }
 }

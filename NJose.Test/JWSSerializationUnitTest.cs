@@ -16,7 +16,6 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NJose.Algorithms;
-using NJose.Extensions;
 using NJose.Serialization;
 using System;
 

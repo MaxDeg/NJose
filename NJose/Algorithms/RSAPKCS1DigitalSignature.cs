@@ -36,10 +36,7 @@ namespace NJose.Algorithms
 
             this.hashAlgorithm = hashAlgorithm;
             this.disposed = false;
-
-            if (!certificate.HasPrivateKey)
-                throw new ArgumentException("Private key not defined");
-
+            
             // TODO A key of size 2048 bits or larger MUST be used with these algorithms.
             this.publicKey = certificate.PublicKey.Key;
             this.privateKey = certificate.PrivateKey;
@@ -51,6 +48,8 @@ namespace NJose.Algorithms
         {
             if (content == null || content.Length == 0)
                 throw new ArgumentNullException(nameof(content));
+            if (this.privateKey == null)
+                throw new InvalidOperationException("Private key not defined");
             if (this.disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
 
@@ -66,6 +65,8 @@ namespace NJose.Algorithms
                 throw new ArgumentNullException(nameof(content));
             if (signature == null || signature.Length == 0)
                 throw new ArgumentNullException(nameof(signature));
+            if (this.publicKey == null)
+                throw new InvalidOperationException("Public key not defined");
             if (this.disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
 

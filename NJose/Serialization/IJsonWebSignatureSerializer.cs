@@ -15,6 +15,7 @@
 ******************************************************************************/
 
 using System;
+using System.Security.Cryptography;
 
 namespace NJose.Serialization
 {
@@ -22,5 +23,11 @@ namespace NJose.Serialization
     {
         string Serialize(JsonWebToken token);
         JsonWebToken Deserialize(string token);
+
+        //string Serialize(byte[] key, string payload);
+        //string Deserialize(byte[] key, string token);
+
+        //string Serialize(AsymmetricAlgorithm key, string payload);
+        //string Deserialize(AsymmetricAlgorithm key, string token);
     }
 }

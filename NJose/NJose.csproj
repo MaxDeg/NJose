@@ -47,7 +47,11 @@
     <Compile Include="Algorithms\RS384DigitalSignature.cs" />
     <Compile Include="Algorithms\RS512DigitalSignature.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
+    <Compile Include="InvalidJoseHeaderException.cs" />
     <Compile Include="JoseHeader.cs" />
+    <Compile Include="JsonSerialization\EmptyCollectionContractResolver.cs" />
+    <Compile Include="JsonSerialization\JoseTypeHeaderConverter.cs" />
+    <Compile Include="JsonSerialization\UnixDateTimeOffsetConverter.cs" />
     <Compile Include="JsonWebToken.cs" />
     <Compile Include="Algorithms\HMACDigitalSignature.cs" />
     <Compile Include="Algorithms\HS256DigitalSignature.cs" />
@@ -67,6 +71,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="JsonWebSignature\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
