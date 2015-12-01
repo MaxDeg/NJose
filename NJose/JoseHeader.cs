@@ -18,10 +18,7 @@ using Newtonsoft.Json;
 using NJose.JsonSerialization;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NJose
 {
@@ -100,7 +97,7 @@ namespace NJose
             return JsonConvert.SerializeObject(this, new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore,
-                ContractResolver = new EmptyCollectionContractResolver()
+                ContractResolver = new IgnoreEmptyCollectionContractResolver()
             });
         }
 
@@ -111,14 +108,13 @@ namespace NJose
 
             var joseHeader = JsonConvert.DeserializeObject<JoseHeader>(token, new JsonSerializerSettings
             {
+                NullValueHandling = NullValueHandling.Ignore,
+                ContractResolver = new IgnoreEmptyCollectionContractResolver()
             });
 
             return joseHeader;
         }
-
-        public bool ShouldSerializeCritical() => this.Critical.Count > 0;
-        public bool ShouldSerializeX509CertificateChain() => this.X509CertificateChain.Count > 0;
-
+        
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
