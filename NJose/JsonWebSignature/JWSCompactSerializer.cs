@@ -14,20 +14,25 @@
     limitations under the License.
 ******************************************************************************/
 
-using NJose.Algorithms;
+using NJose.JsonWebSignature.Algorithms;
 using NJose.Extensions;
 using System;
 using System.Linq;
 
 using static System.Text.Encoding;
 
-namespace NJose.Serialization
+namespace NJose.JsonWebSignature
 {
     public sealed class JWSCompactSerializer : IJsonWebSignatureSerializer
     {
-        private readonly IJWADigitalSignature algorithm;
+        private readonly IDigitalSignatureAlgorithm algorithm;
+        
+        public JWSCompactSerializer()
+        {
+            this.algorithm = new NoAlgorithm();
+        }
 
-        public JWSCompactSerializer(IJWADigitalSignature algorithm)
+        public JWSCompactSerializer(IDigitalSignatureAlgorithm algorithm)
         {
             if (algorithm == null)
                 throw new ArgumentNullException(nameof(algorithm));
@@ -35,17 +40,21 @@ namespace NJose.Serialization
             this.algorithm = algorithm;
         }
 
-        public string Serialize(JsonWebToken token)
+        public string Serialize(string payload)
         {
-            if (token == null)
-                throw new ArgumentNullException(nameof(token));
+            return this.Serialize(payload, new JoseHeader());
+        }
 
-            var header = new JoseHeader { Algorithm = this.algorithm.Name };
+        public string Serialize(string payload, JoseHeader header)
+        {
+            if (payload == null)
+                throw new ArgumentNullException(nameof(payload));
 
-            var toSign = string.Join(".", header.ToJson().ToBase64Url(), token.ToJson().ToBase64Url());
-            var signature = algorithm.Sign(ASCII.GetBytes(toSign)).ToBase64Url();
+            header.Algorithm = this.algorithm.Name;
+            
+            var signature = algorithm.Sign(header, payload).ToBase64Url(); 
 
-            return string.IsNullOrEmpty(signature) ? toSign : string.Join(".", toSign, signature);
+            return string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url(), signature);
         }
 
         public JsonWebToken Deserialize(string token)
@@ -55,25 +64,23 @@ namespace NJose.Serialization
 
             var splittedToken = token.Split('.');
 
-            // Minimal number of parts in a JWS compact token is 2 in case of "none" algorithm
-            if (splittedToken.Length < 2)
+            // JWS compact token has always 3 parts
+            if (splittedToken.Length != 3)
                 throw new InvalidJsonWebSignatureToken("invalid token format");
 
-            var header = new JoseHeader(UTF8.GetString(splittedToken[0].FromBase64Url()));
+            var header = JoseHeader.Parse(UTF8.GetString(splittedToken[0].FromBase64Url()));
 
             // the algorithm must be the same to avoid vulnerabilities
             if (this.algorithm.Name != header.Algorithm)
                 throw new InvalidJsonWebSignatureToken("Algorithms mismatch");
 
-            var toSign = string.Join(".", splittedToken.Take(2));
-            // if Algorithm is none signature is empty byte[]
-            // use select to avoid NullReferenceException
-            var signature = splittedToken.Skip(2).Select(s => s.FromBase64Url()).SingleOrDefault();
+            var payload = UTF8.GetString(splittedToken[1].FromBase64Url());
+            var signature = splittedToken.Skip(2).Single().FromBase64Url();
 
-            if (!this.algorithm.Verify(ASCII.GetBytes(toSign), signature))
+            if (!this.algorithm.Verify(header, payload, signature))
                 throw new InvalidJsonWebSignatureToken("signatures mismatch");
 
-            return new JsonWebToken(UTF8.GetString(splittedToken[1].FromBase64Url()));
+            return new JsonWebToken(payload);
         }
 
         public void Dispose()

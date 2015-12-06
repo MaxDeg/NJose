@@ -23,11 +23,15 @@ namespace NJose.Test
         }
 
         [TestMethod]
-        public void TestMethod2()
+        public void Critical_Header_As_List()
         {
-            var json = JoseHeader.Parse(@"{ typ: 'example', cty: 'application/example;part=""1/2""' }");
+            JoseHeader.Parse(@"{ typ: 'example', cty: 'application/example;part=""1/2""', crit: ['test', 'tt'], 'test': 'dsgffgdf', 'tt': '..' }");
+        }
 
-            Assert.Fail();
+        [TestMethod]
+        public void Critical_Header_As_String()
+        {
+            JoseHeader.Parse(@"{ typ: 'example', cty: 'application/example;part=""1/2""', crit: 'test', 'test': 'dsgffgdf' }");
         }
     }
 }

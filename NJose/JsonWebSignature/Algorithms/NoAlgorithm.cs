@@ -14,15 +14,28 @@
     limitations under the License.
 ******************************************************************************/
 
-using System.Security.Cryptography.X509Certificates;
+using System;
+using System.Linq;
 
-namespace NJose.Algorithms
+namespace NJose.JsonWebSignature.Algorithms
 {
-    public sealed class RS512DigitalSignature : RSAPKCS1DigitalSignature
+    internal sealed class NoAlgorithm : IDigitalSignatureAlgorithm
     {
-        public RS512DigitalSignature(X509Certificate2 certificate)
-            : base("SHA512", certificate) { }
+        private static readonly byte[] EmptyByteArray = new byte[0];
 
-        public override string Name { get { return "RS512"; } }
+        public string Name { get { return "none"; } }
+        
+        public byte[] Sign(JoseHeader header, string payload)
+        {
+            // No signature for this algorithm type ;)
+            return EmptyByteArray;
+        }
+
+        public bool Verify(JoseHeader header, string payload, byte[] signature)
+        {
+            return EmptyByteArray.SequenceEqual(signature);
+        }
+
+        public void Dispose() { }
     }
 }

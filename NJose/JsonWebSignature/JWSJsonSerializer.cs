@@ -14,25 +14,30 @@
     limitations under the License.
 ******************************************************************************/
 
-using NJose.Algorithms;
+using NJose.JsonWebSignature.Algorithms;
 using System;
 using System.Linq;
 
-namespace NJose.Serialization
+namespace NJose.JsonWebSignature
 {
     public sealed class JWSJsonSerializer : IJsonWebSignatureSerializer
     {
-        private readonly IJWADigitalSignature[] algorithms;
+        private readonly IDigitalSignatureAlgorithm[] algorithms;
 
-        public JWSJsonSerializer(params IJWADigitalSignature[] algorithms)
+        public JWSJsonSerializer(params IDigitalSignatureAlgorithm[] algorithms)
         {
             if (algorithms == null || algorithms.Length == 0)
                 throw new ArgumentNullException(nameof(algorithms));
 
             this.algorithms = algorithms.ToArray();
         }
+        
+        public string Serialize(string token)
+        {
+            throw new NotImplementedException();
+        }
 
-        public string Serialize(JsonWebToken token)
+        public string Serialize(string token, JoseHeader header)
         {
             // sign token with all algorithm in the order
             throw new NotImplementedException();

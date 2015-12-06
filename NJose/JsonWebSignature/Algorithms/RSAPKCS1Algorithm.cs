@@ -17,17 +17,21 @@
 using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using NJose.Extensions;
 
-namespace NJose.Algorithms
+using static System.Text.Encoding;
+
+namespace NJose.JsonWebSignature.Algorithms
 {
-    public abstract class RSAPKCS1DigitalSignature : IJWADigitalSignature
+    public abstract class RSAPKCS1Algorithm : IDigitalSignatureAlgorithm
     {
         private readonly string hashAlgorithm;
         private readonly AsymmetricAlgorithm publicKey;
         private readonly AsymmetricAlgorithm privateKey;
+
         protected bool disposed;
 
-        public RSAPKCS1DigitalSignature(string hashAlgorithm, X509Certificate2 certificate)
+        public RSAPKCS1Algorithm(string hashAlgorithm, X509Certificate2 certificate)
         {
             if (hashAlgorithm == null)
                 throw new ArgumentNullException(nameof(hashAlgorithm));
@@ -43,11 +47,13 @@ namespace NJose.Algorithms
         }
 
         public virtual string Name { get { throw new NotImplementedException(); } }
-        
-        public byte[] Sign(byte[] content)
+                
+        public byte[] Sign(JoseHeader header, string payload)
         {
-            if (content == null || content.Length == 0)
-                throw new ArgumentNullException(nameof(content));
+            if (header == null)
+                throw new ArgumentNullException(nameof(header));
+            if (string.IsNullOrWhiteSpace(payload))
+                throw new ArgumentNullException(nameof(payload));
             if (this.privateKey == null)
                 throw new InvalidOperationException("Private key not defined");
             if (this.disposed)
@@ -56,24 +62,31 @@ namespace NJose.Algorithms
             RSAPKCS1SignatureFormatter rsaFormatter = new RSAPKCS1SignatureFormatter(this.privateKey);
             rsaFormatter.SetHashAlgorithm(this.hashAlgorithm);
 
-            return rsaFormatter.CreateSignature(content);
+            var contentToSign = string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url());
+            return rsaFormatter.CreateSignature(ASCII.GetBytes(contentToSign));
         }
 
-        public bool Verify(byte[] content, byte[] signature)
+        public bool Verify(JoseHeader header, string payload, byte[] signature)
         {
-            if (content == null || content.Length == 0)
-                throw new ArgumentNullException(nameof(content));
+            if (header == null)
+                throw new ArgumentNullException(nameof(header));
+            if (string.IsNullOrWhiteSpace(payload))
+                throw new ArgumentNullException(nameof(payload));
             if (signature == null || signature.Length == 0)
                 throw new ArgumentNullException(nameof(signature));
-            if (this.publicKey == null)
-                throw new InvalidOperationException("Public key not defined");
             if (this.disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
+
+            if (this.publicKey == null)
+                throw new InvalidOperationException("Public key not defined");
+            // TODO get it from header :)
+
 
             RSAPKCS1SignatureDeformatter rsaDeformatter = new RSAPKCS1SignatureDeformatter(this.publicKey);
             rsaDeformatter.SetHashAlgorithm(this.hashAlgorithm);
 
-            return rsaDeformatter.VerifySignature(content, signature);
+            var contentToSign = string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url());
+            return rsaDeformatter.VerifySignature(ASCII.GetBytes(contentToSign), signature);
         }
 
         public void Dispose()

@@ -14,20 +14,15 @@
     limitations under the License.
 ******************************************************************************/
 
-using System;
-using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
-namespace NJose.Serialization
+namespace NJose.JsonWebSignature.Algorithms
 {
-    public interface IJsonWebSignatureSerializer : IDisposable
+    public sealed class RS384Algorithm : RSAPKCS1Algorithm
     {
-        string Serialize(JsonWebToken token);
-        JsonWebToken Deserialize(string token);
+        public RS384Algorithm(X509Certificate2 certificate)
+            : base("SHA384", certificate) { }
 
-        //string Serialize(byte[] key, string payload);
-        //string Deserialize(byte[] key, string token);
-
-        //string Serialize(AsymmetricAlgorithm key, string payload);
-        //string Deserialize(AsymmetricAlgorithm key, string token);
+        public override string Name { get { return "RS384"; } }
     }
 }

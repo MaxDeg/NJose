@@ -17,15 +17,18 @@
 using System;
 using System.Linq;
 using System.Security.Cryptography;
+using NJose.Extensions;
 
-namespace NJose.Algorithms
+using static System.Text.Encoding;
+
+namespace NJose.JsonWebSignature.Algorithms
 {
-    public abstract class HMACDigitalSignature : IJWADigitalSignature
+    public abstract class HMACAlgorithm : IDigitalSignatureAlgorithm
     {
         protected readonly HMAC hashAlgorithm;
         protected bool disposed;
 
-        public HMACDigitalSignature(HMAC hashAlgorithm)
+        public HMACAlgorithm(HMAC hashAlgorithm)
         {
             if (hashAlgorithm == null)
                 throw new ArgumentNullException(nameof(hashAlgorithm));
@@ -35,27 +38,32 @@ namespace NJose.Algorithms
         }
 
         public virtual string Name { get { throw new NotImplementedException(); } }
-
-        public byte[] Sign(byte[] content)
+        
+        public byte[] Sign(JoseHeader header, string payload)
         {
-            if (content == null || content.Length == 0)
-                throw new ArgumentNullException(nameof(content));
+            if (header == null)
+                throw new ArgumentNullException(nameof(header));
+            if (string.IsNullOrWhiteSpace(payload))
+                throw new ArgumentNullException(nameof(payload));
             if (this.disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
 
-            return this.hashAlgorithm.ComputeHash(content);
+            var contentToSign = string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url());
+            return this.hashAlgorithm.ComputeHash(ASCII.GetBytes(contentToSign));
         }
 
-        public bool Verify(byte[] content, byte[] signature)
+        public bool Verify(JoseHeader header, string payload, byte[] signature)
         {
-            if (content == null || content.Length == 0)
-                throw new ArgumentNullException(nameof(content));
+            if (header == null)
+                throw new ArgumentNullException(nameof(header));
+            if (string.IsNullOrWhiteSpace(payload))
+                throw new ArgumentNullException(nameof(payload));
             if (signature == null || signature.Length == 0)
                 throw new ArgumentNullException(nameof(signature));
             if (this.disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
-
-            return this.Sign(content).SequenceEqual(signature);
+            
+            return this.Sign(header, payload).SequenceEqual(signature);
         }
 
         public void Dispose()

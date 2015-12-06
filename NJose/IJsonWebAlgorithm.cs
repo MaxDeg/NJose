@@ -15,16 +15,11 @@
 ******************************************************************************/
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace NJose.Algorithms
+namespace NJose
 {
-    public interface IJWADigitalSignature : IJsonWebAlgorithm
+    public interface IJsonWebAlgorithm : IDisposable
     {
-        byte[] Sign(byte[] content);
-        bool Verify(byte[] content, byte[] signature);
+        string Name { get; }
     }
 }

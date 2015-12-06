@@ -15,8 +15,8 @@
 ******************************************************************************/
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NJose.Algorithms;
-using NJose.Serialization;
+using NJose.JsonWebSignature;
+using NJose.JsonWebSignature.Algorithms;
 using System;
 
 namespace NJose.Test
@@ -30,8 +30,8 @@ namespace NJose.Test
             var token = new JsonWebToken { Issuer = "joe", ExpirationTime = 1300819380 };
             token.AddClaim("http://example.com/is_root", true);
 
-            var serializer = new JWSCompactSerializer(new NoDigitalSignature());
-            var strToken = serializer.Serialize(token);
+            var serializer = new JWSCompactSerializer();
+            var strToken = serializer.Serialize(token.ToJson());
             var deserializedToken = serializer.Deserialize(strToken);
             
             Assert.AreEqual(token.ToJson(), deserializedToken.ToJson());
@@ -40,7 +40,7 @@ namespace NJose.Test
         [TestMethod, ExpectedException(typeof(ArgumentException))]
         public void HS256_Algorithm_Key_Too_Short()
         {
-            new JWSCompactSerializer(new HS256DigitalSignature("1To680X8yGFe8wEFu"));
+            new JWSCompactSerializer(new HS256Algorithm("1To680X8yGFe8wEFu"));
         }
 
         [TestMethod]
@@ -49,8 +49,8 @@ namespace NJose.Test
             var token = new JsonWebToken { Issuer = "joe", ExpirationTime = 1300819380 };
             token.AddClaim("http://example.com/is_root", true);
 
-            var serializer = new JWSCompactSerializer(new HS256DigitalSignature("1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
-            var strToken = serializer.Serialize(token);
+            var serializer = new JWSCompactSerializer(new HS256Algorithm("1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
+            var strToken = serializer.Serialize(token.ToJson());
             var deserializedToken = serializer.Deserialize(strToken);
 
             Assert.AreEqual(token.ToJson(), deserializedToken.ToJson());
@@ -59,7 +59,7 @@ namespace NJose.Test
         [TestMethod, ExpectedException(typeof(ArgumentException))]
         public void HS384_Algorithm_Key_Too_Short()
         {
-            new JWSCompactSerializer(new HS384DigitalSignature("1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
+            new JWSCompactSerializer(new HS384Algorithm("1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
         }
 
         [TestMethod]
@@ -68,8 +68,8 @@ namespace NJose.Test
             var token = new JsonWebToken { Issuer = "joe", ExpirationTime = 1300819380 };
             token.AddClaim("http://example.com/is_root", true);
 
-            var serializer = new JWSCompactSerializer(new HS384DigitalSignature("1To680X8yGFe8wEFu5Ye8bW735CF9j6D1To680X8yGFe8wEF"));
-            var strToken = serializer.Serialize(token);
+            var serializer = new JWSCompactSerializer(new HS384Algorithm("1To680X8yGFe8wEFu5Ye8bW735CF9j6D1To680X8yGFe8wEF"));
+            var strToken = serializer.Serialize(token.ToJson());
             var deserializedToken = serializer.Deserialize(strToken);
 
             Assert.AreEqual(token.ToJson(), deserializedToken.ToJson());
@@ -78,7 +78,7 @@ namespace NJose.Test
         [TestMethod, ExpectedException(typeof(ArgumentException))]
         public void HS512_Algorithm_Key_Too_Short()
         {
-            new JWSCompactSerializer(new HS512DigitalSignature("1To680X8yGFe8wEFu5Ye8bW735CF9j6D1To680X8yGFe8wEFu5Ye8bW735CF9j6"));
+            new JWSCompactSerializer(new HS512Algorithm("1To680X8yGFe8wEFu5Ye8bW735CF9j6D1To680X8yGFe8wEFu5Ye8bW735CF9j6"));
         }
 
         [TestMethod]
@@ -87,8 +87,8 @@ namespace NJose.Test
             var token = new JsonWebToken { Issuer = "joe", ExpirationTime = 1300819380 };
             token.AddClaim("http://example.com/is_root", true);
 
-            var serializer = new JWSCompactSerializer(new HS512DigitalSignature("1To680X8yGFe8wEFu5Ye8bW735CF9j6D1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
-            var strToken = serializer.Serialize(token);
+            var serializer = new JWSCompactSerializer(new HS512Algorithm("1To680X8yGFe8wEFu5Ye8bW735CF9j6D1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
+            var strToken = serializer.Serialize(token.ToJson());
             var deserializedToken = serializer.Deserialize(strToken);
 
             Assert.AreEqual(token.ToJson(), deserializedToken.ToJson());

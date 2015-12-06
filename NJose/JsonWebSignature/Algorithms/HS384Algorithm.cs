@@ -18,26 +18,25 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace NJose.Algorithms
+namespace NJose.JsonWebSignature.Algorithms
 {
-    public sealed class HS512DigitalSignature : HMACDigitalSignature
+    public sealed class HS384Algorithm : HMACAlgorithm
     {
-        public HS512DigitalSignature(byte[] key)
-            : base(new HMACSHA512(key))
+        public HS384Algorithm(byte[] key)
+            : base(new HMACSHA384(key))
         {
-            // key must be larger or equals to 512 bits
-            if (key.Length < 512 / 8)
+            // key must be larger or equals to 384 bits
+            if (key.Length < 384 / 8)
             {
                 this.hashAlgorithm?.Dispose();
-                throw new ArgumentException("A key of the same size as the hash output (512 bits) or larger MUST be used");
+                throw new ArgumentException("A key of the same size as the hash output (384 bits) or larger MUST be used");
             }
         }
 
-        public HS512DigitalSignature(string key)
-            : this(Encoding.UTF8.GetBytes(key))
-        { }
+        public HS384Algorithm(string key)
+            : this(Encoding.UTF8.GetBytes(key)) { }
 
-        public override string Name { get { return "HS512"; } }
+        public override string Name { get { return "HS384"; } }
 
         protected override void Dispose(bool disposing)
         {

@@ -14,16 +14,11 @@
     limitations under the License.
 ******************************************************************************/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NJose.Algorithms
+namespace NJose.JsonWebSignature.Algorithms
 {
-    public interface IJsonWebAlgorithm : IDisposable
-    {
-        string Name { get; }
+    public interface IDigitalSignatureAlgorithm : IJsonWebAlgorithm
+    {        
+        byte[] Sign(JoseHeader header, string payload);
+        bool Verify(JoseHeader header, string payload, byte[] signature);
     }
 }

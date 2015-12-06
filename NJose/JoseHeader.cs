@@ -18,22 +18,29 @@ using Newtonsoft.Json;
 using NJose.JsonSerialization;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Runtime.Serialization;
+using System.Security.Cryptography;
 
 namespace NJose
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public sealed class JoseHeader
     {
         // Extension headers - must be defined in critical header
         [JsonExtensionData]
         private readonly Dictionary<string, object> headers = new Dictionary<string, object>();
 
+        [JsonProperty("crit")]
+        [JsonConverter(typeof(CompactSingleItemCollectionConverter<string>))]
+        private readonly ISet<string> critical;
+
         public JoseHeader()
         {
             this.X509CertificateChain = new HashSet<string>();
-            this.Critical = new HashSet<string>();
+            this.critical = new HashSet<string>();
         }
-
+        
         [Obsolete]
         public JoseHeader(string token) { }
 
@@ -60,13 +67,15 @@ namespace NJose
 
         [JsonProperty("x5c")]
         public ISet<string> X509CertificateChain { get; private set; }
-        
+
         [JsonProperty("x5t")]
         public string X509Thumbprint { get; set; }
 
-        [JsonProperty("crit")]
-        internal ISet<string> Critical { get; private set; }
-        
+        public IReadOnlyCollection<string> Critical
+        {
+            get { return this.critical.ToImmutableHashSet(); }
+        }
+
         public object this[string key]
         {
             get { return this.headers[key]; }
@@ -78,8 +87,8 @@ namespace NJose
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (value == null) throw new ArgumentNullException(nameof(value));
 
-            if (!this.Critical.Contains(key))
-                this.Critical.Add(key);
+            if (!this.critical.Contains(key))
+                this.critical.Add(key);
 
             this.headers[key] = value;
         }
@@ -88,7 +97,7 @@ namespace NJose
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            this.Critical.Remove(key);
+            this.critical.Remove(key);
             this.headers.Remove(key);
         }
 
@@ -114,15 +123,20 @@ namespace NJose
 
             return joseHeader;
         }
-        
+
+        internal AsymmetricAlgorithm GetPublicKey()
+        {
+            throw new NotImplementedException();
+        }
+
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            if (this.headers.Count != this.Critical.Count)
+            if (this.headers.Count != this.critical.Count)
                 throw new InvalidJoseHeaderException();
 
             foreach (var key in this.headers.Keys)
-                if (!this.Critical.Contains(key))
+                if (!this.critical.Contains(key))
                     throw new InvalidJoseHeaderException(key);
         }
     }

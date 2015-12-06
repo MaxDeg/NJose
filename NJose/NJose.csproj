@@ -35,6 +35,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.1.37.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.1.37\lib\dotnet\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -44,37 +48,36 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algorithms\RS384DigitalSignature.cs" />
-    <Compile Include="Algorithms\RS512DigitalSignature.cs" />
+    <Compile Include="JsonWebSignature\Algorithms\RS384Algorithm.cs" />
+    <Compile Include="JsonWebSignature\Algorithms\RS512Algorithm.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
     <Compile Include="InvalidJoseHeaderException.cs" />
     <Compile Include="JoseHeader.cs" />
+    <Compile Include="JsonSerialization\CompactCollectionConverter.cs" />
     <Compile Include="JsonSerialization\EmptyCollectionContractResolver.cs" />
     <Compile Include="JsonSerialization\JoseTypeHeaderConverter.cs" />
     <Compile Include="JsonSerialization\UnixDateTimeOffsetConverter.cs" />
     <Compile Include="JsonWebToken.cs" />
-    <Compile Include="Algorithms\HMACDigitalSignature.cs" />
-    <Compile Include="Algorithms\HS256DigitalSignature.cs" />
-    <Compile Include="Algorithms\HS384DigitalSignature.cs" />
-    <Compile Include="Algorithms\HS512DigitalSignature.cs" />
-    <Compile Include="Algorithms\IJsonWebAlgorithm.cs" />
-    <Compile Include="Algorithms\IJWADigitalSignature.cs" />
-    <Compile Include="Algorithms\NoDigitalSignature.cs" />
-    <Compile Include="Algorithms\RS256DigitalSignature.cs" />
-    <Compile Include="Algorithms\RSAPKCS1DigitalSignature.cs" />
-    <Compile Include="Serialization\IJsonWebSignatureSerializer.cs" />
+    <Compile Include="JsonWebSignature\Algorithms\HMACAlgorithm.cs" />
+    <Compile Include="JsonWebSignature\Algorithms\HS256Algorithm.cs" />
+    <Compile Include="JsonWebSignature\Algorithms\HS384Algorithm.cs" />
+    <Compile Include="JsonWebSignature\Algorithms\HS512Algorithm.cs" />
+    <Compile Include="IJsonWebAlgorithm.cs" />
+    <Compile Include="JsonWebSignature\Algorithms\IDigitalSignatureAlgorithm.cs" />
+    <Compile Include="JsonWebSignature\Algorithms\NoAlgorithm.cs" />
+    <Compile Include="JsonWebSignature\Algorithms\RS256Algorithm.cs" />
+    <Compile Include="JsonWebSignature\Algorithms\RSAPKCS1Algorithm.cs" />
+    <Compile Include="JsonWebSignature\IJsonWebSignatureSerializer.cs" />
     <Compile Include="InvalidJsonWebSignatureToken.cs" />
-    <Compile Include="Serialization\JWSCompactSerializer.cs" />
+    <Compile Include="JsonWebSignature\JWSCompactSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Serialization\JWSJsonSerializer.cs" />
+    <Compile Include="JsonWebSignature\JWSJsonSerializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="JsonWebSignature\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

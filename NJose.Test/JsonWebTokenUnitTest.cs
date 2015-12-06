@@ -16,9 +16,9 @@
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NJose.Serialization;
-using NJose.Algorithms;
+using NJose.JsonWebSignature;
 using System.Threading;
+using NJose.JsonWebSignature.Algorithms;
 
 namespace NJose.Test
 {
@@ -33,8 +33,8 @@ namespace NJose.Test
 
             Assert.IsFalse(token.IsValid);
 
-            var serializer = new JWSCompactSerializer(new HS256DigitalSignature("1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
-            var deserializedToken = serializer.Deserialize(serializer.Serialize(token));
+            var serializer = new JWSCompactSerializer(new HS256Algorithm("1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
+            var deserializedToken = serializer.Deserialize(serializer.Serialize(token.ToJson()));
 
             Assert.IsFalse(deserializedToken.IsValid);
         }
@@ -47,8 +47,8 @@ namespace NJose.Test
 
             Assert.IsFalse(token.IsValid);
 
-            var serializer = new JWSCompactSerializer(new HS256DigitalSignature("1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
-            var deserializedToken = serializer.Deserialize(serializer.Serialize(token));
+            var serializer = new JWSCompactSerializer(new HS256Algorithm("1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
+            var deserializedToken = serializer.Deserialize(serializer.Serialize(token.ToJson()));
 
             Assert.IsFalse(deserializedToken.IsValid);
         }
@@ -61,8 +61,8 @@ namespace NJose.Test
 
             Assert.IsFalse(token.IsValid);
 
-            var serializer = new JWSCompactSerializer(new HS256DigitalSignature("1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
-            var deserializedToken = serializer.Deserialize(serializer.Serialize(token));
+            var serializer = new JWSCompactSerializer(new HS256Algorithm("1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
+            var deserializedToken = serializer.Deserialize(serializer.Serialize(token.ToJson()));
 
             Assert.IsFalse(deserializedToken.IsValid);
 

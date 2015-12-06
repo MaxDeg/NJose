@@ -16,13 +16,13 @@
 
 using System.Security.Cryptography.X509Certificates;
 
-namespace NJose.Algorithms
+namespace NJose.JsonWebSignature.Algorithms
 {
-    public sealed class RS384DigitalSignature : RSAPKCS1DigitalSignature
+    public sealed class RS256Algorithm : RSAPKCS1Algorithm
     {
-        public RS384DigitalSignature(X509Certificate2 certificate)
-            : base("SHA384", certificate) { }
+        public RS256Algorithm(X509Certificate2 certificate) 
+            : base("SHA256", certificate) { }
 
-        public override string Name { get { return "RS384"; } }
+        public override string Name { get { return "RS256"; } }
     }
 }

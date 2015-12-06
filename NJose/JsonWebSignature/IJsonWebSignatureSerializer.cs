@@ -14,15 +14,16 @@
     limitations under the License.
 ******************************************************************************/
 
-using System.Security.Cryptography.X509Certificates;
+using System;
+using System.Security.Cryptography;
 
-namespace NJose.Algorithms
+namespace NJose.JsonWebSignature
 {
-    public sealed class RS256DigitalSignature : RSAPKCS1DigitalSignature
+    public interface IJsonWebSignatureSerializer : IDisposable
     {
-        public RS256DigitalSignature(X509Certificate2 certificate) 
-            : base("SHA256", certificate) { }
+        string Serialize(string token);
+        string Serialize(string token, JoseHeader header);
 
-        public override string Name { get { return "RS256"; } }
+        JsonWebToken Deserialize(string token);
     }
 }

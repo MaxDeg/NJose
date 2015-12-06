@@ -18,11 +18,11 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace NJose.Algorithms
+namespace NJose.JsonWebSignature.Algorithms
 {
-    public sealed class HS256DigitalSignature : HMACDigitalSignature
+    public sealed class HS256Algorithm : HMACAlgorithm
     {
-        public HS256DigitalSignature(byte[] key)
+        public HS256Algorithm(byte[] key)
             : base(new HMACSHA256(key))
         {
             // key must be larger or equals to 256 bits
@@ -33,7 +33,7 @@ namespace NJose.Algorithms
             }
         }
 
-        public HS256DigitalSignature(string key)
+        public HS256Algorithm(string key)
             : this(Encoding.UTF8.GetBytes(key)) { }
 
         public override string Name { get { return "HS256"; } }
