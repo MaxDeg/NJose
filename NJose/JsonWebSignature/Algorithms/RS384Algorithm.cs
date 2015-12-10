@@ -14,15 +14,22 @@
     limitations under the License.
 ******************************************************************************/
 
+using System;
 using System.Security.Cryptography.X509Certificates;
+using NJose.JsonWebKey;
 
 namespace NJose.JsonWebSignature.Algorithms
 {
     public sealed class RS384Algorithm : RSAPKCS1Algorithm
     {
-        public RS384Algorithm(X509Certificate2 certificate)
-            : base("SHA384", certificate) { }
+        public RS384Algorithm()
+            : base("SHA384") { }
 
         public override string Name { get { return "RS384"; } }
+
+        public override void SetKey(CryptographicKey key)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

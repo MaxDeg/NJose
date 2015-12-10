@@ -15,19 +15,29 @@
 ******************************************************************************/
 
 using System;
-using System.Security.Cryptography.X509Certificates;
-using NJose.JsonWebKey;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace NJose.JsonWebSignature.Algorithms
+namespace NJose.JsonWebKey
 {
-    public sealed class RS512Algorithm : RSAPKCS1Algorithm
+    // Could be encrypted in a JWE
+    public class JWKSet
     {
-        public RS512Algorithm()
-            : base("SHA512") { }
+        private readonly Task<IDictionary<string, CryptographicKey>> keySet;
 
-        public override string Name { get { return "RS512"; } }
+        public JWKSet(Uri keySetUrl)
+        {
+            this.keySet = this.CreateGetKeySetRequest(keySetUrl);
+        }
 
-        public override void SetKey(CryptographicKey key)
+        public Task<CryptographicKey> GetKey(string keyId)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task<IDictionary<string, CryptographicKey>> CreateGetKeySetRequest(Uri keySetUrl)
         {
             throw new NotImplementedException();
         }

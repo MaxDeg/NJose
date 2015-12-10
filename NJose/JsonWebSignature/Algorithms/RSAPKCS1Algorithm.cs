@@ -20,34 +20,58 @@ using System.Security.Cryptography.X509Certificates;
 using NJose.Extensions;
 
 using static System.Text.Encoding;
+using NJose.JsonWebKey;
+using System.Threading.Tasks;
 
 namespace NJose.JsonWebSignature.Algorithms
 {
     public abstract class RSAPKCS1Algorithm : IDigitalSignatureAlgorithm
     {
         private readonly string hashAlgorithm;
-        private readonly AsymmetricAlgorithm publicKey;
         private readonly AsymmetricAlgorithm privateKey;
+        protected readonly AsymmetricAlgorithm publicKey;
 
         protected bool disposed;
 
-        public RSAPKCS1Algorithm(string hashAlgorithm, X509Certificate2 certificate)
+        protected RSAPKCS1Algorithm(string hashAlgorithm)
         {
             if (hashAlgorithm == null)
                 throw new ArgumentNullException(nameof(hashAlgorithm));
-            if (certificate == null)
-                throw new ArgumentNullException(nameof(certificate));
 
             this.hashAlgorithm = hashAlgorithm;
             this.disposed = false;
-            
-            // TODO A key of size 2048 bits or larger MUST be used with these algorithms.
-            this.publicKey = certificate.PublicKey.Key;
-            this.privateKey = certificate.PrivateKey;
         }
 
+        protected RSAPKCS1Algorithm(string hashAlgorithm, AsymmetricAlgorithm publicKey = null, AsymmetricAlgorithm privateKey = null)
+            : this(hashAlgorithm)
+        {
+            if (publicKey.KeySize < 2048)
+                throw new ArgumentException("Key size must be at 2048bits");
+            if (privateKey.KeySize < 2048)
+                throw new ArgumentException("Key size must be at 2048bits");
+
+            this.publicKey = publicKey;
+            this.privateKey = privateKey;
+        }
+        
         public virtual string Name { get { throw new NotImplementedException(); } }
-                
+        
+        /// <summary>
+        /// Create a public AsymmetricAlgorithm from CryptographicKey
+        /// </summary>
+        /// <param name="key"></param>
+        public virtual void SetKey(CryptographicKey key)
+        {
+            if (key.X509CertificateChain.Count > 0)
+            {
+                // check x509 thumbprint
+            }
+            else if (key.X509Url != null)
+            {
+                // check x509 thumbprint
+            }
+        }
+
         public byte[] Sign(JoseHeader header, string payload)
         {
             if (header == null)
@@ -70,18 +94,42 @@ namespace NJose.JsonWebSignature.Algorithms
         {
             if (header == null)
                 throw new ArgumentNullException(nameof(header));
+            if (this.disposed)
+                throw new ObjectDisposedException(this.GetType().Name);
+
+            // Get it from header :)
+            if (this.publicKey == null)
+                this.SetKey(header.GetPublicKey());
+
+            return this.VerifyInternal(header, payload, signature);
+        }
+
+        async public Task<bool> VerifyAsync(JoseHeader header, string payload, byte[] signature)
+        {
+            if (header == null)
+                throw new ArgumentNullException(nameof(header));
+            if (this.disposed)
+                throw new ObjectDisposedException(this.GetType().Name);
+
+            // Get it from header :)
+            if (this.publicKey == null)
+                this.SetKey(await header.GetPublicKeyAsync());
+
+            return this.VerifyInternal(header, payload, signature);
+        }
+
+        public void Dispose()
+        {
+            this.disposed = true;
+        }
+
+        public bool VerifyInternal(JoseHeader header, string payload, byte[] signature)
+        {
             if (string.IsNullOrWhiteSpace(payload))
                 throw new ArgumentNullException(nameof(payload));
             if (signature == null || signature.Length == 0)
                 throw new ArgumentNullException(nameof(signature));
-            if (this.disposed)
-                throw new ObjectDisposedException(this.GetType().Name);
-
-            if (this.publicKey == null)
-                throw new InvalidOperationException("Public key not defined");
-            // TODO get it from header :)
-
-
+            
             RSAPKCS1SignatureDeformatter rsaDeformatter = new RSAPKCS1SignatureDeformatter(this.publicKey);
             rsaDeformatter.SetHashAlgorithm(this.hashAlgorithm);
 
@@ -89,9 +137,5 @@ namespace NJose.JsonWebSignature.Algorithms
             return rsaDeformatter.VerifySignature(ASCII.GetBytes(contentToSign), signature);
         }
 
-        public void Dispose()
-        {
-            this.disposed = true;
-        }
     }
 }

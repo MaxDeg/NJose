@@ -14,11 +14,24 @@
     limitations under the License.
 ******************************************************************************/
 
+using System.Threading.Tasks;
+
 namespace NJose.JsonWebSignature.Algorithms
 {
     public interface IDigitalSignatureAlgorithm : IJsonWebAlgorithm
     {        
         byte[] Sign(JoseHeader header, string payload);
         bool Verify(JoseHeader header, string payload, byte[] signature);
+
+        /// <summary>
+        /// Async version of Verify should only be used with AsymetricAlgorithm and if JoseHeader contains JWK url or X509 Url
+        /// In those 2 cases a http request is done to try to get the public key.
+        /// InvalidOperationException is throw with SymetricAlgorithm
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="payload"></param>
+        /// <param name="signature"></param>
+        /// <returns></returns>
+        Task<bool> VerifyAsync(JoseHeader header, string payload, byte[] signature);
     }
 }

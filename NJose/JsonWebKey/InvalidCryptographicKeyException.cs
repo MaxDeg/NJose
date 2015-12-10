@@ -15,21 +15,27 @@
 ******************************************************************************/
 
 using System;
-using System.Security.Cryptography.X509Certificates;
-using NJose.JsonWebKey;
+using System.Runtime.Serialization;
 
-namespace NJose.JsonWebSignature.Algorithms
+namespace NJose.JsonWebKey
 {
-    public sealed class RS512Algorithm : RSAPKCS1Algorithm
+    [Serializable]
+    internal class InvalidCryptographicKeyException : Exception
     {
-        public RS512Algorithm()
-            : base("SHA512") { }
-
-        public override string Name { get { return "RS512"; } }
-
-        public override void SetKey(CryptographicKey key)
+        public InvalidCryptographicKeyException()
         {
-            throw new NotImplementedException();
+        }
+
+        public InvalidCryptographicKeyException(string message) : base(message)
+        {
+        }
+
+        public InvalidCryptographicKeyException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected InvalidCryptographicKeyException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
         }
     }
 }

@@ -20,6 +20,7 @@ using System.Security.Cryptography;
 using NJose.Extensions;
 
 using static System.Text.Encoding;
+using System.Threading.Tasks;
 
 namespace NJose.JsonWebSignature.Algorithms
 {
@@ -28,7 +29,7 @@ namespace NJose.JsonWebSignature.Algorithms
         protected readonly HMAC hashAlgorithm;
         protected bool disposed;
 
-        public HMACAlgorithm(HMAC hashAlgorithm)
+        protected HMACAlgorithm(HMAC hashAlgorithm)
         {
             if (hashAlgorithm == null)
                 throw new ArgumentNullException(nameof(hashAlgorithm));
@@ -64,6 +65,11 @@ namespace NJose.JsonWebSignature.Algorithms
                 throw new ObjectDisposedException(this.GetType().Name);
             
             return this.Sign(header, payload).SequenceEqual(signature);
+        }
+        
+        public Task<bool> VerifyAsync(JoseHeader header, string payload, byte[] signature)
+        {
+            throw new InvalidOperationException();
         }
 
         public void Dispose()

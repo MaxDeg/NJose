@@ -16,11 +16,13 @@
 
 using Newtonsoft.Json;
 using NJose.JsonSerialization;
+using NJose.JsonWebKey;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace NJose
 {
@@ -40,7 +42,7 @@ namespace NJose
             this.X509CertificateChain = new HashSet<string>();
             this.critical = new HashSet<string>();
         }
-        
+
         [Obsolete]
         public JoseHeader(string token) { }
 
@@ -53,11 +55,17 @@ namespace NJose
         [JsonProperty("cty"), JsonConverter(typeof(JoseTypeHeaderConverter))]
         public string ContentType { get; set; }
 
+        /// <summary>
+        /// Public key only
+        /// </summary>
         [JsonProperty("jku")]
         public Uri JwkSetUrl { get; set; }
 
+        /// <summary>
+        /// Public key only
+        /// </summary>
         [JsonProperty("jwk")]
-        public string JsonWebKey { get; set; }
+        public CryptographicKey JsonWebKey { get; set; }
 
         [JsonProperty("kid")]
         public string KeyId { get; set; }
@@ -124,9 +132,33 @@ namespace NJose
             return joseHeader;
         }
 
-        internal AsymmetricAlgorithm GetPublicKey()
+        async internal Task<CryptographicKey> GetPublicKeyAsync()
         {
-            throw new NotImplementedException();
+            if (this.JsonWebKey != null)
+            {
+                if (!string.IsNullOrWhiteSpace(this.KeyId) && string.CompareOrdinal(this.KeyId, this.JsonWebKey.Id) != 0)
+                    throw new InvalidCryptographicKeyException("KeyId header and JWK Id missmatch");
+
+                return this.JsonWebKey;
+            }
+            else if (this.JwkSetUrl != null && !string.IsNullOrWhiteSpace(this.KeyId))
+            {
+                var set = new JWKSet(this.JwkSetUrl);
+                return await set.GetKey(this.KeyId);
+            }
+            else if (this.X509Url != null || this.X509CertificateChain != null)
+                return new CryptographicKey(this.X509Url, this.X509CertificateChain, this.X509Thumbprint);
+
+            throw new KeyNotFoundException("No CryptographicKey found in JOSE header");
+        }
+        
+        internal CryptographicKey GetPublicKey()
+        {
+            var task = this.GetPublicKeyAsync();
+            task.ConfigureAwait(false);
+            task.Wait();
+
+            return task.Result;
         }
 
         [OnDeserialized]

@@ -15,21 +15,17 @@
 ******************************************************************************/
 
 using System;
-using System.Security.Cryptography.X509Certificates;
-using NJose.JsonWebKey;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace NJose.JsonWebSignature.Algorithms
+namespace NJose.JsonWebKey
 {
-    public sealed class RS512Algorithm : RSAPKCS1Algorithm
+    internal static class KeyType
     {
-        public RS512Algorithm()
-            : base("SHA512") { }
-
-        public override string Name { get { return "RS512"; } }
-
-        public override void SetKey(CryptographicKey key)
-        {
-            throw new NotImplementedException();
-        }
+        public const string EllipticCurve = "EC";
+        public const string RSA = "RSA";
+        public const string OctetSequence = "oct";
     }
 }

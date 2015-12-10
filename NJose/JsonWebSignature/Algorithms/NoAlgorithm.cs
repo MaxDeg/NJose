@@ -16,12 +16,15 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace NJose.JsonWebSignature.Algorithms
 {
     internal sealed class NoAlgorithm : IDigitalSignatureAlgorithm
     {
         private static readonly byte[] EmptyByteArray = new byte[0];
+
+        private bool disposed = false;
 
         public string Name { get { return "none"; } }
         
@@ -33,9 +36,22 @@ namespace NJose.JsonWebSignature.Algorithms
 
         public bool Verify(JoseHeader header, string payload, byte[] signature)
         {
+            if (signature == null)
+                throw new ArgumentNullException(nameof(signature));
+            if (this.disposed)
+                throw new ObjectDisposedException(this.GetType().Name);
+
             return EmptyByteArray.SequenceEqual(signature);
         }
 
-        public void Dispose() { }
+        public Task<bool> VerifyAsync(JoseHeader header, string payload, byte[] signature)
+        {
+            throw new InvalidOperationException();
+        }
+
+        public void Dispose()
+        {
+            this.disposed = true;
+        }
     }
 }
