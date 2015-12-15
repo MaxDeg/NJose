@@ -26,15 +26,18 @@ namespace NJose
         {
         }
 
-        public InvalidJsonWebSignatureToken(string message) : base(message)
+        public InvalidJsonWebSignatureToken(string message)
+            : base(message)
         {
         }
 
-        public InvalidJsonWebSignatureToken(string message, Exception innerException) : base(message, innerException)
+        public InvalidJsonWebSignatureToken(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
 
-        protected InvalidJsonWebSignatureToken(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected InvalidJsonWebSignatureToken(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
     }

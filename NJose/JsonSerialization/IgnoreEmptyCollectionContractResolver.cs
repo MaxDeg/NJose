@@ -22,14 +22,14 @@ using System.Reflection;
 
 namespace NJose.JsonSerialization
 {
-    internal class IgnoreEmptyCollectionContractResolver : DefaultContractResolver
+    internal sealed class IgnoreEmptyCollectionContractResolver : DefaultContractResolver
     {
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             var property = base.CreateProperty(member, memberSerialization);
             var shouldSerialize = property.ShouldSerialize;
 
-            property.ShouldSerialize = obj => (shouldSerialize == null || shouldSerialize(obj)) && IsNotEmpty(property, obj);
+            property.ShouldSerialize = obj => (shouldSerialize == null || shouldSerialize(obj)) && this.IsNotEmpty(property, obj);
 
             return property;
         }
@@ -43,6 +43,4 @@ namespace NJose.JsonSerialization
             return true;
         }
     }
-
-
 }

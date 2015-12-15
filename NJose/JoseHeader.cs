@@ -31,7 +31,7 @@ namespace NJose
     {
         // Extension headers - must be defined in critical header
         [JsonExtensionData]
-        private readonly Dictionary<string, object> headers = new Dictionary<string, object>();
+        private readonly IDictionary<string, object> headers = new Dictionary<string, object>();
 
         [JsonProperty("crit")]
         [JsonConverter(typeof(CompactSingleItemCollectionConverter<string>))]
@@ -56,13 +56,13 @@ namespace NJose
         public string ContentType { get; set; }
 
         /// <summary>
-        /// Public key only
+        /// Gets Public key only
         /// </summary>
         [JsonProperty("jku")]
         public Uri JwkSetUrl { get; set; }
 
         /// <summary>
-        /// Public key only
+        /// Gets Public key only
         /// </summary>
         [JsonProperty("jwk")]
         public CryptographicKey JsonWebKey { get; set; }
@@ -90,34 +90,6 @@ namespace NJose
             set { this.Add(key, value); }
         }
 
-        public void Add(string key, object value)
-        {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (value == null) throw new ArgumentNullException(nameof(value));
-
-            if (!this.critical.Contains(key))
-                this.critical.Add(key);
-
-            this.headers[key] = value;
-        }
-
-        public void Remove(string key)
-        {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-
-            this.critical.Remove(key);
-            this.headers.Remove(key);
-        }
-
-        public string ToJson()
-        {
-            return JsonConvert.SerializeObject(this, new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                ContractResolver = new IgnoreEmptyCollectionContractResolver()
-            });
-        }
-
         public static JoseHeader Parse(string token)
         {
             if (token == null)
@@ -132,7 +104,38 @@ namespace NJose
             return joseHeader;
         }
 
-        async internal Task<CryptographicKey> GetPublicKeyAsync()
+        public void Add(string key, object value)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            if (!this.critical.Contains(key))
+                this.critical.Add(key);
+
+            this.headers[key] = value;
+        }
+
+        public void Remove(string key)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            this.critical.Remove(key);
+            this.headers.Remove(key);
+        }
+
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                ContractResolver = new IgnoreEmptyCollectionContractResolver()
+            });
+        }
+
+        internal async Task<CryptographicKey> GetPublicKeyAsync()
         {
             if (this.JsonWebKey != null)
             {
@@ -143,15 +146,15 @@ namespace NJose
             }
             else if (this.JwkSetUrl != null && !string.IsNullOrWhiteSpace(this.KeyId))
             {
-                var set = new JWKSet(this.JwkSetUrl);
-                return await set.GetKey(this.KeyId);
+                var set = await JWKSet.GetAsync(this.JwkSetUrl);
+                return set[this.KeyId];
             }
             else if (this.X509Url != null || this.X509CertificateChain != null)
                 return new CryptographicKey(this.X509Url, this.X509CertificateChain, this.X509Thumbprint);
 
             throw new KeyNotFoundException("No CryptographicKey found in JOSE header");
         }
-        
+
         internal CryptographicKey GetPublicKey()
         {
             var task = this.GetPublicKeyAsync();
@@ -168,8 +171,10 @@ namespace NJose
                 throw new InvalidJoseHeaderException();
 
             foreach (var key in this.headers.Keys)
+            {
                 if (!this.critical.Contains(key))
                     throw new InvalidJoseHeaderException(key);
+            }
         }
     }
 }

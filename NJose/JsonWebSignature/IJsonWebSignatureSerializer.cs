@@ -22,6 +22,7 @@ namespace NJose.JsonWebSignature
     public interface IJsonWebSignatureSerializer : IDisposable
     {
         string Serialize(string token);
+
         string Serialize(string token, JoseHeader header);
 
         JsonWebToken Deserialize(string token);

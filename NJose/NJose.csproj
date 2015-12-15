@@ -20,6 +20,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <CodeAnalysisRuleSet>NJose.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>NJose.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -48,6 +51,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JsonSerialization\CompactSingleItemCollectionConverter{TType}.cs" />
+    <Compile Include="JsonSerialization\IgnoreEmptyCollectionContractResolver.cs" />
     <Compile Include="JsonWebKey\InvalidCryptographicKeyException.cs" />
     <Compile Include="JsonWebKey\CryptographicKey.cs" />
     <Compile Include="JsonWebKey\JWKSet.cs" />
@@ -58,8 +63,6 @@
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
     <Compile Include="InvalidJoseHeaderException.cs" />
     <Compile Include="JoseHeader.cs" />
-    <Compile Include="JsonSerialization\CompactCollectionConverter.cs" />
-    <Compile Include="JsonSerialization\EmptyCollectionContractResolver.cs" />
     <Compile Include="JsonSerialization\JoseTypeHeaderConverter.cs" />
     <Compile Include="JsonSerialization\UnixDateTimeOffsetConverter.cs" />
     <Compile Include="JsonWebToken.cs" />
@@ -80,10 +83,16 @@
     <Compile Include="JsonWebSignature\JWSJsonSerializer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="NJose.ruleset" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="JsonWebEncryption\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0-rc2\analyzers\dotnet\cs\Newtonsoft.Json.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0-rc2\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0-rc2\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

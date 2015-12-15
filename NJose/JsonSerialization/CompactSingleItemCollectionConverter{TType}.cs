@@ -45,7 +45,8 @@ namespace NJose.JsonSerialization
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            if (value == null) return;
+            if (value == null)
+                return;
 
             var collection = value as ICollection<TType>;
             if (collection.Count == 1)

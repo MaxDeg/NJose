@@ -26,15 +26,18 @@ namespace NJose.JsonWebKey
         {
         }
 
-        public InvalidCryptographicKeyException(string message) : base(message)
+        public InvalidCryptographicKeyException(string message)
+            : base(message)
         {
         }
 
-        public InvalidCryptographicKeyException(string message, Exception innerException) : base(message, innerException)
+        public InvalidCryptographicKeyException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
 
-        protected InvalidCryptographicKeyException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected InvalidCryptographicKeyException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
     }

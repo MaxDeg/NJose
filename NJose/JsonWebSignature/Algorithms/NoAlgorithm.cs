@@ -27,7 +27,7 @@ namespace NJose.JsonWebSignature.Algorithms
         private bool disposed = false;
 
         public string Name { get { return "none"; } }
-        
+
         public byte[] Sign(JoseHeader header, string payload)
         {
             // No signature for this algorithm type ;)

@@ -19,8 +19,9 @@ using System.Threading.Tasks;
 namespace NJose.JsonWebSignature.Algorithms
 {
     public interface IDigitalSignatureAlgorithm : IJsonWebAlgorithm
-    {        
+    {
         byte[] Sign(JoseHeader header, string payload);
+
         bool Verify(JoseHeader header, string payload, byte[] signature);
 
         /// <summary>

@@ -43,7 +43,7 @@ namespace NJose.Extensions
         {
             if (string.IsNullOrWhiteSpace(str))
                 return EmptyByteArray;
-            
+
             return Convert.FromBase64String(str);
         }
 
@@ -54,10 +54,7 @@ namespace NJose.Extensions
 
             // In Base64Url we removed the padding the final '=' characters
             // str must be a multiple of 4
-            var lengthWithPadding = str.Length;
-            for (; lengthWithPadding % 4 != 0; lengthWithPadding++) ;
-
-            return FromBase64(str.PadRight(lengthWithPadding, '='));
+            return FromBase64(str.PadRight(str.Length + 4 - (str.Length % 4), '='));
         }
     }
 }

@@ -17,15 +17,15 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NJose.JsonWebKey
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class CryptographicKey
+    public sealed class CryptographicKey
     {
+        [JsonExtensionData]
+        private readonly IDictionary<string, object> additionalInfo = new Dictionary<string, object>();
+
         internal CryptographicKey() { }
 
         internal CryptographicKey(Uri x509Url, ISet<string> x509Chain, string x509Thumbprint)
@@ -40,7 +40,7 @@ namespace NJose.JsonWebKey
 
         [JsonProperty("kty")]
         public string Type { get; private set; }
-        
+
         // Use and Operations
         // The "use" and "key_ops" JWK members SHOULD NOT be used together;
         // however, if both are used, the information they convey MUST be
@@ -53,7 +53,7 @@ namespace NJose.JsonWebKey
 
         [JsonProperty("alg")]
         public string Algorithm { get; private set; }
-        
+
         [JsonProperty("x5u")]
         public Uri X509Url { get; set; }
 
@@ -62,5 +62,24 @@ namespace NJose.JsonWebKey
 
         [JsonProperty("x5t")]
         public string X509Thumbprint { get; set; }
+
+        public string this[string key]
+        {
+            get { return this.additionalInfo[key] as string; }
+        }
+
+        public bool TryGetValue(string key, out string value)
+        {
+            object additionalValue;
+            value = null;
+
+            if (this.additionalInfo.TryGetValue(key, out additionalValue))
+            {
+                value = additionalValue as string;
+                return true;
+            }
+            else
+                return false;
+        }
     }
 }

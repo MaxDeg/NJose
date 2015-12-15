@@ -14,14 +14,12 @@
     limitations under the License.
 ******************************************************************************/
 
+using NJose.Extensions;
+using NJose.JsonWebKey;
 using System;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using NJose.Extensions;
-
-using static System.Text.Encoding;
-using NJose.JsonWebKey;
 using System.Threading.Tasks;
+using static System.Text.Encoding;
 
 namespace NJose.JsonWebSignature.Algorithms
 {
@@ -29,9 +27,7 @@ namespace NJose.JsonWebSignature.Algorithms
     {
         private readonly string hashAlgorithm;
         private readonly AsymmetricAlgorithm privateKey;
-        protected readonly AsymmetricAlgorithm publicKey;
-
-        protected bool disposed;
+        private readonly AsymmetricAlgorithm publicKey;
 
         protected RSAPKCS1Algorithm(string hashAlgorithm)
         {
@@ -39,7 +35,7 @@ namespace NJose.JsonWebSignature.Algorithms
                 throw new ArgumentNullException(nameof(hashAlgorithm));
 
             this.hashAlgorithm = hashAlgorithm;
-            this.disposed = false;
+            this.Disposed = false;
         }
 
         protected RSAPKCS1Algorithm(string hashAlgorithm, AsymmetricAlgorithm publicKey = null, AsymmetricAlgorithm privateKey = null)
@@ -53,9 +49,11 @@ namespace NJose.JsonWebSignature.Algorithms
             this.publicKey = publicKey;
             this.privateKey = privateKey;
         }
-        
+
         public virtual string Name { get { throw new NotImplementedException(); } }
-        
+
+        protected bool Disposed { get; private set; }
+
         /// <summary>
         /// Create a public AsymmetricAlgorithm from CryptographicKey
         /// </summary>
@@ -80,7 +78,7 @@ namespace NJose.JsonWebSignature.Algorithms
                 throw new ArgumentNullException(nameof(payload));
             if (this.privateKey == null)
                 throw new InvalidOperationException("Private key not defined");
-            if (this.disposed)
+            if (this.Disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
 
             RSAPKCS1SignatureFormatter rsaFormatter = new RSAPKCS1SignatureFormatter(this.privateKey);
@@ -94,7 +92,7 @@ namespace NJose.JsonWebSignature.Algorithms
         {
             if (header == null)
                 throw new ArgumentNullException(nameof(header));
-            if (this.disposed)
+            if (this.Disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
 
             // Get it from header :)
@@ -104,11 +102,11 @@ namespace NJose.JsonWebSignature.Algorithms
             return this.VerifyInternal(header, payload, signature);
         }
 
-        async public Task<bool> VerifyAsync(JoseHeader header, string payload, byte[] signature)
+        public async Task<bool> VerifyAsync(JoseHeader header, string payload, byte[] signature)
         {
             if (header == null)
                 throw new ArgumentNullException(nameof(header));
-            if (this.disposed)
+            if (this.Disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
 
             // Get it from header :)
@@ -120,7 +118,7 @@ namespace NJose.JsonWebSignature.Algorithms
 
         public void Dispose()
         {
-            this.disposed = true;
+            this.Disposed = true;
         }
 
         public bool VerifyInternal(JoseHeader header, string payload, byte[] signature)
@@ -129,13 +127,12 @@ namespace NJose.JsonWebSignature.Algorithms
                 throw new ArgumentNullException(nameof(payload));
             if (signature == null || signature.Length == 0)
                 throw new ArgumentNullException(nameof(signature));
-            
+
             RSAPKCS1SignatureDeformatter rsaDeformatter = new RSAPKCS1SignatureDeformatter(this.publicKey);
             rsaDeformatter.SetHashAlgorithm(this.hashAlgorithm);
 
             var contentToSign = string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url());
             return rsaDeformatter.VerifySignature(ASCII.GetBytes(contentToSign), signature);
         }
-
     }
 }

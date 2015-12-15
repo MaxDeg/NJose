@@ -14,20 +14,18 @@
     limitations under the License.
 ******************************************************************************/
 
+using NJose.Extensions;
 using System;
 using System.Linq;
 using System.Security.Cryptography;
-using NJose.Extensions;
-
-using static System.Text.Encoding;
 using System.Threading.Tasks;
+using static System.Text.Encoding;
 
 namespace NJose.JsonWebSignature.Algorithms
 {
     public abstract class HMACAlgorithm : IDigitalSignatureAlgorithm
     {
-        protected readonly HMAC hashAlgorithm;
-        protected bool disposed;
+        private readonly HMAC hashAlgorithm;
 
         protected HMACAlgorithm(HMAC hashAlgorithm)
         {
@@ -35,22 +33,26 @@ namespace NJose.JsonWebSignature.Algorithms
                 throw new ArgumentNullException(nameof(hashAlgorithm));
 
             this.hashAlgorithm = hashAlgorithm;
-            this.disposed = false;
+            this.Disposed = false;
         }
 
         public virtual string Name { get { throw new NotImplementedException(); } }
-        
+
+        protected bool Disposed { get; private set; }
+
+        protected HMAC HashAlgorithm { get { return this.hashAlgorithm; } }
+
         public byte[] Sign(JoseHeader header, string payload)
         {
             if (header == null)
                 throw new ArgumentNullException(nameof(header));
             if (string.IsNullOrWhiteSpace(payload))
                 throw new ArgumentNullException(nameof(payload));
-            if (this.disposed)
+            if (this.Disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
 
             var contentToSign = string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url());
-            return this.hashAlgorithm.ComputeHash(ASCII.GetBytes(contentToSign));
+            return this.HashAlgorithm.ComputeHash(ASCII.GetBytes(contentToSign));
         }
 
         public bool Verify(JoseHeader header, string payload, byte[] signature)
@@ -61,12 +63,12 @@ namespace NJose.JsonWebSignature.Algorithms
                 throw new ArgumentNullException(nameof(payload));
             if (signature == null || signature.Length == 0)
                 throw new ArgumentNullException(nameof(signature));
-            if (this.disposed)
+            if (this.Disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
-            
+
             return this.Sign(header, payload).SequenceEqual(signature);
         }
-        
+
         public Task<bool> VerifyAsync(JoseHeader header, string payload, byte[] signature)
         {
             throw new InvalidOperationException();
@@ -75,8 +77,8 @@ namespace NJose.JsonWebSignature.Algorithms
         public void Dispose()
         {
             this.Dispose(true);
-            this.disposed = true;
-            
+            this.Disposed = true;
+
             GC.SuppressFinalize(this);
         }
 

@@ -14,11 +14,10 @@
     limitations under the License.
 ******************************************************************************/
 
-using NJose.JsonWebSignature.Algorithms;
 using NJose.Extensions;
+using NJose.JsonWebSignature.Algorithms;
 using System;
 using System.Linq;
-
 using static System.Text.Encoding;
 
 namespace NJose.JsonWebSignature
@@ -26,7 +25,7 @@ namespace NJose.JsonWebSignature
     public sealed class JWSCompactSerializer : IJsonWebSignatureSerializer
     {
         private readonly IDigitalSignatureAlgorithm algorithm;
-        
+
         public JWSCompactSerializer()
         {
             this.algorithm = new NoAlgorithm();
@@ -51,8 +50,8 @@ namespace NJose.JsonWebSignature
                 throw new ArgumentNullException(nameof(payload));
 
             header.Algorithm = this.algorithm.Name;
-            
-            var signature = algorithm.Sign(header, payload).ToBase64Url(); 
+
+            var signature = this.algorithm.Sign(header, payload).ToBase64Url();
 
             return string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url(), signature);
         }

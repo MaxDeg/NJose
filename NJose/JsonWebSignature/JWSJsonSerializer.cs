@@ -31,7 +31,7 @@ namespace NJose.JsonWebSignature
 
             this.algorithms = algorithms.ToArray();
         }
-        
+
         public string Serialize(string token)
         {
             throw new NotImplementedException();

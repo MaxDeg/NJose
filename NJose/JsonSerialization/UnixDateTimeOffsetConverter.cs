@@ -17,8 +17,10 @@ namespace NJose.JsonSerialization
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var value = reader.Value;
-            if (existingValue == null) return null;
-            if (existingValue.GetType() != typeof(long)) return null;
+            if (existingValue == null)
+                return null;
+            if (existingValue.GetType() != typeof(long))
+                return null;
 
             return DateTimeOffset.FromUnixTimeSeconds((long)value);
         }

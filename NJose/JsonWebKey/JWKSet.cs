@@ -14,32 +14,38 @@
     limitations under the License.
 ******************************************************************************/
 
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace NJose.JsonWebKey
 {
     // Could be encrypted in a JWE
-    public class JWKSet
+    public sealed class JWKSet
     {
-        private readonly Task<IDictionary<string, CryptographicKey>> keySet;
+        [JsonProperty("keys")]
+        private IEnumerable<CryptographicKey> set = null;
 
-        public JWKSet(Uri keySetUrl)
+        private JWKSet() { }
+
+        public CryptographicKey this[string keyId]
         {
-            this.keySet = this.CreateGetKeySetRequest(keySetUrl);
+            get { return this.set.FirstOrDefault(k => k.Id == keyId); }
         }
 
-        public Task<CryptographicKey> GetKey(string keyId)
+        public static async Task<JWKSet> GetAsync(Uri keySetUrl)
         {
-            throw new NotImplementedException();
-        }
+            using (var client = new HttpClient())
+            using (var response = await client.GetAsync(keySetUrl))
+            {
+                response.EnsureSuccessStatusCode();
+                var keySet = await response.Content.ReadAsStringAsync();
 
-        private Task<IDictionary<string, CryptographicKey>> CreateGetKeySetRequest(Uri keySetUrl)
-        {
-            throw new NotImplementedException();
+                return JsonConvert.DeserializeObject<JWKSet>(keySet);
+            }
         }
     }
 }

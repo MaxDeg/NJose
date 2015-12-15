@@ -22,7 +22,7 @@ namespace NJose.JsonWebSignature.Algorithms
 {
     public sealed class RS256Algorithm : RSAPKCS1Algorithm
     {
-        public RS256Algorithm() 
+        public RS256Algorithm()
             : base("SHA256") { }
 
         public override string Name { get { return "RS256"; } }

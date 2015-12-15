@@ -10,7 +10,7 @@ namespace NJose
         {
         }
 
-        public InvalidJoseHeaderException(string headerKey) 
+        public InvalidJoseHeaderException(string headerKey)
             : base("invalid header " + headerKey)
         {
         }

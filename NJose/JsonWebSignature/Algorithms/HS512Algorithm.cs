@@ -28,7 +28,7 @@ namespace NJose.JsonWebSignature.Algorithms
             // key must be larger or equals to 512 bits
             if (key.Length < 512 / 8)
             {
-                this.hashAlgorithm?.Dispose();
+                this.HashAlgorithm?.Dispose();
                 throw new ArgumentException("A key of the same size as the hash output (512 bits) or larger MUST be used");
             }
         }
@@ -44,7 +44,7 @@ namespace NJose.JsonWebSignature.Algorithms
             base.Dispose(disposing);
 
             if (disposing)
-                this.hashAlgorithm?.Dispose();
+                this.HashAlgorithm?.Dispose();
         }
     }
 }
