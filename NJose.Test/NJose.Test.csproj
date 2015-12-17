@@ -85,6 +85,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="keyset.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Choose>

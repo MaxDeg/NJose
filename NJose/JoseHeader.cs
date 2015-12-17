@@ -74,7 +74,7 @@ namespace NJose
         public Uri X509Url { get; set; }
 
         [JsonProperty("x5c")]
-        public ISet<string> X509CertificateChain { get; private set; }
+        public IEnumerable<string> X509CertificateChain { get; private set; }
 
         [JsonProperty("x5t")]
         public string X509Thumbprint { get; set; }

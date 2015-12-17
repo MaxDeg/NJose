@@ -17,6 +17,7 @@
 using NJose.Extensions;
 using NJose.JsonWebKey;
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using static System.Text.Encoding;
@@ -60,7 +61,7 @@ namespace NJose.JsonWebSignature.Algorithms
         /// <param name="key"></param>
         public virtual void SetKey(CryptographicKey key)
         {
-            if (key.X509CertificateChain.Count > 0)
+            if (key.X509CertificateChain.Count() > 0)
             {
                 // check x509 thumbprint
             }

@@ -15,6 +15,7 @@
 ******************************************************************************/
 
 using NJose.Extensions;
+using NJose.JsonWebKey;
 using System;
 using System.Linq;
 using System.Security.Cryptography;
@@ -80,6 +81,11 @@ namespace NJose.JsonWebSignature.Algorithms
             this.Disposed = true;
 
             GC.SuppressFinalize(this);
+        }
+
+        protected static string GetKey(CryptographicKey key)
+        {
+            return key["k"];
         }
 
         protected virtual void Dispose(bool disposing)

@@ -17,6 +17,8 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace NJose.JsonWebKey
 {
@@ -28,7 +30,7 @@ namespace NJose.JsonWebKey
 
         internal CryptographicKey() { }
 
-        internal CryptographicKey(Uri x509Url, ISet<string> x509Chain, string x509Thumbprint)
+        internal CryptographicKey(Uri x509Url, IEnumerable<string> x509Chain, string x509Thumbprint)
         {
             this.X509Url = x509Url;
             this.X509CertificateChain = x509Chain;
@@ -58,7 +60,7 @@ namespace NJose.JsonWebKey
         public Uri X509Url { get; set; }
 
         [JsonProperty("x5c")]
-        public ISet<string> X509CertificateChain { get; private set; }
+        public IEnumerable<string> X509CertificateChain { get; private set; }
 
         [JsonProperty("x5t")]
         public string X509Thumbprint { get; set; }
@@ -80,6 +82,30 @@ namespace NJose.JsonWebKey
             }
             else
                 return false;
+        }
+
+        [OnDeserialized]
+        private void Validate(StreamingContext context)
+        {
+            switch (this.Type)
+            {
+                case KeyType.OctetSequence:
+                    if (!this.additionalInfo.ContainsKey("k"))
+                        throw new InvalidCryptographicKeyException("missing fields for key type \"" + KeyType.OctetSequence + "\"");
+                    break;
+
+                case KeyType.RSA:
+                    // TO COMPLETE
+                    if (!this.additionalInfo.Where(a => new[] { "n", "e" }.Contains(a.Key)).Any())
+                        throw new InvalidCryptographicKeyException("missing fields for key type \"" + KeyType.RSA + "\"");
+                    break;
+
+                case KeyType.EllipticCurve:
+                    if (!this.additionalInfo.Where(a => new[] { "crv", "x", "y" }.Contains(a.Key)).Any()
+                        && !this.additionalInfo.Where(a => new[] { "d" }.Contains(a.Key)).Any())
+                        throw new InvalidCryptographicKeyException("missing fields for key type \"" + KeyType.EllipticCurve + "\"");
+                    break;
+            }
         }
     }
 }

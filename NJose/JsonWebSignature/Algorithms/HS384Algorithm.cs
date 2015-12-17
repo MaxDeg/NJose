@@ -14,6 +14,7 @@
     limitations under the License.
 ******************************************************************************/
 
+using NJose.JsonWebKey;
 using System;
 using System.Security.Cryptography;
 using System.Text;
@@ -35,6 +36,9 @@ namespace NJose.JsonWebSignature.Algorithms
 
         public HS384Algorithm(string key)
             : this(Encoding.UTF8.GetBytes(key)) { }
+
+        public HS384Algorithm(CryptographicKey key)
+            : this(GetKey(key)) { }
 
         public override string Name { get { return "HS384"; } }
 

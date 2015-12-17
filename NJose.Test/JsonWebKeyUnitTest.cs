@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Microsoft.Owin.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Owin.Hosting;
-using Owin;
 using NJose.JsonWebKey;
+using Owin;
+using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace NJose.Test
@@ -16,20 +17,12 @@ namespace NJose.Test
         [TestInitialize]
         public void Initialize()
         {
+            var content = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "keyset.json"));
+
             this.server = WebApp.Start(this.keySetUri.ToString(), app => app.Run(c =>
             {
                 c.Response.ContentType = "application/json";
-                return c.Response.WriteAsync(@"{
-                  ""keys"": [
-                    {
-                      ""alg"": ""HS256"",
-                      ""kty"": ""oct"",
-                      ""use"": ""sig"",
-                      ""k"": ""-AgQASjPKxu1S8Ta4-LxGvAZw9PhkcZkrEhKBw1KzNLnPfW6fwDlsMbrvVplx0nRR4d_GSvbJyx_QVh0XoRMWrZngyJ5MfLxyWkE34F5Eo7rTCCo8xSFr30ecWooJGzDfdN1IS2Liz5dNNknkUWGo40WIz361oeOlb4-LEymuCryt6jG2AFGz0fkNyRgunIU9mrWaBymyKQGj8epEMDmYKCwWILJg-PlBXR2dn5NmRPONozhWY0KVm5Yd5ATcLDsMSSV9ulrVQ1F40uPpPe_DjHxD5aW1t0HHeeiyZ_NRn4HSZIlEtUyh6g6wMasmKPBsSg1o2Fz_bCpsUi23Inx0A"",
-                      ""kid"": ""key-1""
-                    }
-                  ]
-                }");
+                return c.Response.WriteAsync(content);
             }));
         }
 
@@ -43,7 +36,7 @@ namespace NJose.Test
         public async Task Get_Key_By_Id()
         {
             var keySet = await JWKSet.GetAsync(this.keySetUri);
-            var key = keySet["key-1"];
+            var key = keySet["hs-256"];
 
             Assert.IsNotNull(key);
             Assert.AreEqual(key.Algorithm, "HS256");

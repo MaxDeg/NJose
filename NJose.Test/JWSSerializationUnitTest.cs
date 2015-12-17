@@ -14,16 +14,42 @@
     limitations under the License.
 ******************************************************************************/
 
+using Microsoft.Owin.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NJose.JsonWebKey;
 using NJose.JsonWebSignature;
 using NJose.JsonWebSignature.Algorithms;
+using Owin;
 using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace NJose.Test
 {
     [TestClass]
     public class JWSSerializationUnitTest
     {
+        private Uri keySetUri = new Uri("http://localhost:3727");
+        private IDisposable server;
+
+        [TestInitialize]
+        public void Initialize()
+        {
+            var content = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "keyset.json"));
+
+            this.server = WebApp.Start(this.keySetUri.ToString(), app => app.Run(c =>
+            {
+                c.Response.ContentType = "application/json";
+                return c.Response.WriteAsync(content);
+            }));
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            this.server?.Dispose();
+        }
+
         [TestMethod]
         public void Verify_None_Algorithm_Serialization()
         {
@@ -44,12 +70,15 @@ namespace NJose.Test
         }
 
         [TestMethod]
-        public void Verify_HS256_Algorithm_Serialization()
+        public async Task Verify_HS256_Algorithm_Serialization()
         {
+            var keySet = await JWKSet.GetAsync(this.keySetUri);
+            var key = keySet["hs-256"];
+
             var token = new JsonWebToken { Issuer = "joe", ExpirationTime = 1300819380 };
             token.AddClaim("http://example.com/is_root", true);
 
-            var serializer = new JWSCompactSerializer(new HS256Algorithm("1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
+            var serializer = new JWSCompactSerializer(new HS256Algorithm(key));
             var strToken = serializer.Serialize(token.ToJson());
             var deserializedToken = serializer.Deserialize(strToken);
 
@@ -63,12 +92,15 @@ namespace NJose.Test
         }
 
         [TestMethod]
-        public void Verify_HS384_Algorithm_Serialization()
+        public async Task Verify_HS384_Algorithm_Serialization()
         {
+            var keySet = await JWKSet.GetAsync(this.keySetUri);
+            var key = keySet["hs-384"];
+
             var token = new JsonWebToken { Issuer = "joe", ExpirationTime = 1300819380 };
             token.AddClaim("http://example.com/is_root", true);
 
-            var serializer = new JWSCompactSerializer(new HS384Algorithm("1To680X8yGFe8wEFu5Ye8bW735CF9j6D1To680X8yGFe8wEF"));
+            var serializer = new JWSCompactSerializer(new HS384Algorithm(key));
             var strToken = serializer.Serialize(token.ToJson());
             var deserializedToken = serializer.Deserialize(strToken);
 
@@ -82,12 +114,15 @@ namespace NJose.Test
         }
 
         [TestMethod]
-        public void Verify_HS512_Algorithm_Serialization()
+        public async Task Verify_HS512_Algorithm_Serialization()
         {
+            var keySet = await JWKSet.GetAsync(this.keySetUri);
+            var key = keySet["hs-512"];
+
             var token = new JsonWebToken { Issuer = "joe", ExpirationTime = 1300819380 };
             token.AddClaim("http://example.com/is_root", true);
 
-            var serializer = new JWSCompactSerializer(new HS512Algorithm("1To680X8yGFe8wEFu5Ye8bW735CF9j6D1To680X8yGFe8wEFu5Ye8bW735CF9j6D"));
+            var serializer = new JWSCompactSerializer(new HS512Algorithm(key));
             var strToken = serializer.Serialize(token.ToJson());
             var deserializedToken = serializer.Deserialize(strToken);
 

@@ -54,7 +54,8 @@ namespace NJose.Extensions
 
             // In Base64Url we removed the padding the final '=' characters
             // str must be a multiple of 4
-            return FromBase64(str.PadRight(str.Length + 4 - (str.Length % 4), '='));
+            var paddingSize = 4 - (str.Length % 4);
+            return FromBase64(str.PadRight(str.Length + (paddingSize != 4 ? paddingSize : 0), '='));
         }
     }
 }
