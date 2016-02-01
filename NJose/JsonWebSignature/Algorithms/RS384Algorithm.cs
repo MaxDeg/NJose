@@ -25,6 +25,9 @@ namespace NJose.JsonWebSignature.Algorithms
         public RS384Algorithm()
             : base("SHA384") { }
 
+        public RS384Algorithm(CryptographicKey publicKey = null, CryptographicKey privateKey = null)
+            : base("SHA384", publicKey, privateKey) { }
+
         public override string Name { get { return "RS384"; } }
 
         public override void SetKey(CryptographicKey key)

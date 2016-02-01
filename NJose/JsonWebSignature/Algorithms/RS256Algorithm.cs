@@ -25,11 +25,15 @@ namespace NJose.JsonWebSignature.Algorithms
         public RS256Algorithm()
             : base("SHA256") { }
 
+        public RS256Algorithm(CryptographicKey publicKey = null, CryptographicKey privateKey = null)
+            : base("SHA256", publicKey, privateKey)
+        { }
+
         public override string Name { get { return "RS256"; } }
 
         public override void SetKey(CryptographicKey key)
         {
-            throw new NotImplementedException();
+            base.SetKey(key);
         }
     }
 }

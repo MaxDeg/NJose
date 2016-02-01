@@ -25,6 +25,9 @@ namespace NJose.JsonWebSignature.Algorithms
         public RS512Algorithm()
             : base("SHA512") { }
 
+        public RS512Algorithm(CryptographicKey publicKey = null, CryptographicKey privateKey = null)
+            : base("SHA512", publicKey, privateKey) { }
+
         public override string Name { get { return "RS512"; } }
 
         public override void SetKey(CryptographicKey key)

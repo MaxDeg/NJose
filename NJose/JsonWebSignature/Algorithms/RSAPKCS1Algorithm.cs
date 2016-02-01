@@ -14,7 +14,6 @@
     limitations under the License.
 ******************************************************************************/
 
-using NJose.Extensions;
 using NJose.JsonWebKey;
 using System;
 using System.Linq;
@@ -28,7 +27,9 @@ namespace NJose.JsonWebSignature.Algorithms
     {
         private readonly string hashAlgorithm;
         private readonly AsymmetricAlgorithm privateKey;
-        private readonly AsymmetricAlgorithm publicKey;
+        private AsymmetricAlgorithm publicKey;
+        private bool disposePublicKey;
+        private bool disposePrivateKey;
 
         protected RSAPKCS1Algorithm(string hashAlgorithm)
         {
@@ -47,8 +48,40 @@ namespace NJose.JsonWebSignature.Algorithms
             if (privateKey.KeySize < 2048)
                 throw new ArgumentException("Key size must be at 2048bits");
 
+            this.disposePublicKey = false;
+            this.disposePrivateKey = false;
+
             this.publicKey = publicKey;
             this.privateKey = privateKey;
+        }
+
+        protected RSAPKCS1Algorithm(string hashAlgorithm, CryptographicKey publicKey = null, CryptographicKey privateKey = null)
+            : this(hashAlgorithm)
+        {
+            this.disposePublicKey = true;
+            this.disposePrivateKey = true;
+
+            if (publicKey != null)
+            {
+                this.publicKey = GetAlgorithmFromCryptographicKey(publicKey);
+
+                if (this.publicKey.KeySize < 2048)
+                {
+                    this.Dispose();
+                    throw new ArgumentException("Key size must be at 2048bits");
+                }
+            }
+
+            if (privateKey != null)
+            {
+                this.privateKey = GetAlgorithmFromCryptographicKey(privateKey);
+
+                if (this.privateKey.KeySize < 2048)
+                {
+                    this.Dispose();
+                    throw new ArgumentException("Key size must be at 2048bits");
+                }
+            }
         }
 
         public virtual string Name { get { throw new NotImplementedException(); } }
@@ -61,6 +94,8 @@ namespace NJose.JsonWebSignature.Algorithms
         /// <param name="key"></param>
         public virtual void SetKey(CryptographicKey key)
         {
+            this.disposePublicKey = true;
+
             if (key.X509CertificateChain.Count() > 0)
             {
                 // check x509 thumbprint
@@ -69,14 +104,18 @@ namespace NJose.JsonWebSignature.Algorithms
             {
                 // check x509 thumbprint
             }
+            else
+            {
+                this.publicKey = GetAlgorithmFromCryptographicKey(key);
+            }
         }
 
-        public byte[] Sign(JoseHeader header, string payload)
+        public byte[] Sign(JoseHeader header, string data)
         {
             if (header == null)
                 throw new ArgumentNullException(nameof(header));
-            if (string.IsNullOrWhiteSpace(payload))
-                throw new ArgumentNullException(nameof(payload));
+            if (string.IsNullOrWhiteSpace(data))
+                throw new ArgumentNullException(nameof(data));
             if (this.privateKey == null)
                 throw new InvalidOperationException("Private key not defined");
             if (this.Disposed)
@@ -85,11 +124,10 @@ namespace NJose.JsonWebSignature.Algorithms
             RSAPKCS1SignatureFormatter rsaFormatter = new RSAPKCS1SignatureFormatter(this.privateKey);
             rsaFormatter.SetHashAlgorithm(this.hashAlgorithm);
 
-            var contentToSign = string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url());
-            return rsaFormatter.CreateSignature(ASCII.GetBytes(contentToSign));
+            return rsaFormatter.CreateSignature(ASCII.GetBytes(data));
         }
 
-        public bool Verify(JoseHeader header, string payload, byte[] signature)
+        public bool Verify(JoseHeader header, string data, byte[] signature)
         {
             if (header == null)
                 throw new ArgumentNullException(nameof(header));
@@ -100,10 +138,10 @@ namespace NJose.JsonWebSignature.Algorithms
             if (this.publicKey == null)
                 this.SetKey(header.GetPublicKey());
 
-            return this.VerifyInternal(header, payload, signature);
+            return this.VerifyInternal(header, data, signature);
         }
 
-        public async Task<bool> VerifyAsync(JoseHeader header, string payload, byte[] signature)
+        public async Task<bool> VerifyAsync(JoseHeader header, string data, byte[] signature)
         {
             if (header == null)
                 throw new ArgumentNullException(nameof(header));
@@ -114,26 +152,56 @@ namespace NJose.JsonWebSignature.Algorithms
             if (this.publicKey == null)
                 this.SetKey(await header.GetPublicKeyAsync());
 
-            return this.VerifyInternal(header, payload, signature);
+            return this.VerifyInternal(header, data, signature);
         }
 
         public void Dispose()
         {
+            if (this.disposePublicKey)
+                this.publicKey?.Dispose();
+
+            if (this.disposePrivateKey)
+                this.privateKey?.Dispose();
+
+            this.Dispose(true);
             this.Disposed = true;
+
+            GC.SuppressFinalize(this);
         }
 
-        public bool VerifyInternal(JoseHeader header, string payload, byte[] signature)
+        public bool VerifyInternal(JoseHeader header, string data, byte[] signature)
         {
-            if (string.IsNullOrWhiteSpace(payload))
-                throw new ArgumentNullException(nameof(payload));
+            if (string.IsNullOrWhiteSpace(data))
+                throw new ArgumentNullException(nameof(data));
             if (signature == null || signature.Length == 0)
                 throw new ArgumentNullException(nameof(signature));
 
             RSAPKCS1SignatureDeformatter rsaDeformatter = new RSAPKCS1SignatureDeformatter(this.publicKey);
             rsaDeformatter.SetHashAlgorithm(this.hashAlgorithm);
 
-            var contentToSign = string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url());
-            return rsaDeformatter.VerifySignature(ASCII.GetBytes(contentToSign), signature);
+            return rsaDeformatter.VerifySignature(ASCII.GetBytes(data), signature);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
+        private static AsymmetricAlgorithm GetAlgorithmFromCryptographicKey(CryptographicKey key)
+        {
+            RSAParameters rsaParameters = default(RSAParameters);
+
+            key.TryGetValue("e", out rsaParameters.Modulus);
+            key.TryGetValue("n", out rsaParameters.Exponent);
+            key.TryGetValue("d", out rsaParameters.D);
+            key.TryGetValue("p", out rsaParameters.P);
+            key.TryGetValue("q", out rsaParameters.Q);
+            key.TryGetValue("dp", out rsaParameters.DP);
+            key.TryGetValue("dq", out rsaParameters.DQ);
+
+            var provider = new RSACryptoServiceProvider();
+            provider.ImportParameters(rsaParameters);
+
+            return provider;
         }
     }
 }

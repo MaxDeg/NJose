@@ -22,8 +22,6 @@ namespace NJose.JsonWebSignature.Algorithms
 {
     internal sealed class NoAlgorithm : IDigitalSignatureAlgorithm
     {
-        private static readonly byte[] EmptyByteArray = new byte[0];
-
         private bool disposed = false;
 
         public string Name { get { return "none"; } }
@@ -31,7 +29,7 @@ namespace NJose.JsonWebSignature.Algorithms
         public byte[] Sign(JoseHeader header, string payload)
         {
             // No signature for this algorithm type ;)
-            return EmptyByteArray;
+            return Array.Empty<byte>();
         }
 
         public bool Verify(JoseHeader header, string payload, byte[] signature)
@@ -41,7 +39,7 @@ namespace NJose.JsonWebSignature.Algorithms
             if (this.disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
 
-            return EmptyByteArray.SequenceEqual(signature);
+            return Array.Empty<byte>().SequenceEqual(signature);
         }
 
         public Task<bool> VerifyAsync(JoseHeader header, string payload, byte[] signature)

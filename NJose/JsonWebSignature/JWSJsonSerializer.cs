@@ -34,7 +34,7 @@ namespace NJose.JsonWebSignature
 
         public string Serialize(string token)
         {
-            throw new NotImplementedException();
+            return this.Serialize(token, new JoseHeader());
         }
 
         public string Serialize(string token, JoseHeader header)

@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using NJose.Extensions;
+using System.Security.Cryptography;
 
 namespace NJose.JsonWebKey
 {
@@ -67,17 +69,43 @@ namespace NJose.JsonWebKey
 
         public string this[string key]
         {
-            get { return this.additionalInfo[key] as string; }
+            get
+            {
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
+
+                return this.additionalInfo[key] as string;
+            }
         }
 
         public bool TryGetValue(string key, out string value)
         {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
             object additionalValue;
             value = null;
 
             if (this.additionalInfo.TryGetValue(key, out additionalValue))
             {
                 value = additionalValue as string;
+                return true;
+            }
+            else
+                return false;
+        }
+
+        public bool TryGetValue(string key, out byte[] value)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            object additionalValue;
+            value = Array.Empty<byte>();
+
+            if (this.additionalInfo.TryGetValue(key, out additionalValue))
+            {
+                value = (additionalValue as string).FromBase64Url();
                 return true;
             }
             else

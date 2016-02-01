@@ -20,9 +20,9 @@ namespace NJose.JsonWebSignature.Algorithms
 {
     public interface IDigitalSignatureAlgorithm : IJsonWebAlgorithm
     {
-        byte[] Sign(JoseHeader header, string payload);
+        byte[] Sign(JoseHeader header, string data);
 
-        bool Verify(JoseHeader header, string payload, byte[] signature);
+        bool Verify(JoseHeader header, string data, byte[] signature);
 
         /// <summary>
         /// Async version of Verify should only be used with AsymetricAlgorithm and if JoseHeader contains JWK url or X509 Url
@@ -30,9 +30,9 @@ namespace NJose.JsonWebSignature.Algorithms
         /// InvalidOperationException is throw with SymetricAlgorithm
         /// </summary>
         /// <param name="header"></param>
-        /// <param name="payload"></param>
+        /// <param name="data"></param>
         /// <param name="signature"></param>
         /// <returns></returns>
-        Task<bool> VerifyAsync(JoseHeader header, string payload, byte[] signature);
+        Task<bool> VerifyAsync(JoseHeader header, string data, byte[] signature);
     }
 }

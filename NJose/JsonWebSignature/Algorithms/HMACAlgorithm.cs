@@ -43,31 +43,30 @@ namespace NJose.JsonWebSignature.Algorithms
 
         protected HMAC HashAlgorithm { get { return this.hashAlgorithm; } }
 
-        public byte[] Sign(JoseHeader header, string payload)
+        public byte[] Sign(JoseHeader header, string data)
         {
             if (header == null)
                 throw new ArgumentNullException(nameof(header));
-            if (string.IsNullOrWhiteSpace(payload))
-                throw new ArgumentNullException(nameof(payload));
+            if (string.IsNullOrWhiteSpace(data))
+                throw new ArgumentNullException(nameof(data));
             if (this.Disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
 
-            var contentToSign = string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url());
-            return this.HashAlgorithm.ComputeHash(ASCII.GetBytes(contentToSign));
+            return this.HashAlgorithm.ComputeHash(ASCII.GetBytes(data));
         }
 
-        public bool Verify(JoseHeader header, string payload, byte[] signature)
+        public bool Verify(JoseHeader header, string data, byte[] signature)
         {
             if (header == null)
                 throw new ArgumentNullException(nameof(header));
-            if (string.IsNullOrWhiteSpace(payload))
-                throw new ArgumentNullException(nameof(payload));
+            if (string.IsNullOrWhiteSpace(data))
+                throw new ArgumentNullException(nameof(data));
             if (signature == null || signature.Length == 0)
                 throw new ArgumentNullException(nameof(signature));
             if (this.Disposed)
                 throw new ObjectDisposedException(this.GetType().Name);
 
-            return this.Sign(header, payload).SequenceEqual(signature);
+            return this.Sign(header, data).SequenceEqual(signature);
         }
 
         public Task<bool> VerifyAsync(JoseHeader header, string payload, byte[] signature)

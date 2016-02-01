@@ -15,14 +15,13 @@
 ******************************************************************************/
 
 using System;
+using System.Linq;
 using System.Text;
 
 namespace NJose.Extensions
 {
     internal static class StringExtensions
     {
-        private static readonly byte[] EmptyByteArray = new byte[0];
-
         public static string ToBase64(this string str)
         {
             if (string.IsNullOrWhiteSpace(str))
@@ -36,13 +35,17 @@ namespace NJose.Extensions
             if (string.IsNullOrWhiteSpace(str))
                 return string.Empty;
 
-            return ToBase64(str).TrimEnd(new[] { '=' });
+            var encoded = new StringBuilder(ToBase64(str).TrimEnd(new[] { '=' }));
+            encoded.Replace("+", "-");
+            encoded.Replace("/", "_");
+
+            return encoded.ToString();
         }
 
         public static byte[] FromBase64(this string str)
         {
             if (string.IsNullOrWhiteSpace(str))
-                return EmptyByteArray;
+                return Array.Empty<byte>();
 
             return Convert.FromBase64String(str);
         }
@@ -50,12 +53,16 @@ namespace NJose.Extensions
         public static byte[] FromBase64Url(this string str)
         {
             if (string.IsNullOrWhiteSpace(str))
-                return EmptyByteArray;
+                return Array.Empty<byte>();
 
             // In Base64Url we removed the padding the final '=' characters
             // str must be a multiple of 4
             var paddingSize = 4 - (str.Length % 4);
-            return FromBase64(str.PadRight(str.Length + (paddingSize != 4 ? paddingSize : 0), '='));
+            var strBuilder = new StringBuilder(str);
+            strBuilder.Replace("-", "+");
+            strBuilder.Replace("_", "/");
+
+            return FromBase64(strBuilder.ToString().PadRight(str.Length + (paddingSize != 4 ? paddingSize : 0), '='));
         }
     }
 }

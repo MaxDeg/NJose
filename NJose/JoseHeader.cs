@@ -43,9 +43,6 @@ namespace NJose
             this.critical = new HashSet<string>();
         }
 
-        [Obsolete]
-        public JoseHeader(string token) { }
-
         [JsonProperty("alg")]
         public string Algorithm { get; internal set; }
 

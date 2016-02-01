@@ -18,6 +18,7 @@ using NJose.Extensions;
 using NJose.JsonWebSignature.Algorithms;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using static System.Text.Encoding;
 
 namespace NJose.JsonWebSignature
@@ -51,7 +52,8 @@ namespace NJose.JsonWebSignature
 
             header.Algorithm = this.algorithm.Name;
 
-            var signature = this.algorithm.Sign(header, payload).ToBase64Url();
+            var contentToSign = string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url());
+            var signature = this.algorithm.Sign(header, contentToSign).ToBase64Url();
 
             return string.Join(".", header.ToJson().ToBase64Url(), payload.ToBase64Url(), signature);
         }
@@ -75,11 +77,39 @@ namespace NJose.JsonWebSignature
 
             var payload = UTF8.GetString(splittedToken[1].FromBase64Url());
             var signature = splittedToken.Skip(2).Single().FromBase64Url();
+            var contentToSign = string.Join(".", splittedToken.Take(2));
 
-            if (!this.algorithm.Verify(header, payload, signature))
+            if (!this.algorithm.Verify(header, contentToSign, signature))
                 throw new InvalidJsonWebSignatureToken("signatures mismatch");
 
-            return new JsonWebToken(payload);
+            return JsonWebToken.Parse(payload);
+        }
+
+        public async Task<JsonWebToken> DeserializeAsync(string token)
+        {
+            if (token == null)
+                throw new ArgumentNullException(nameof(token));
+
+            var splittedToken = token.Split('.');
+
+            // JWS compact token has always 3 parts
+            if (splittedToken.Length != 3)
+                throw new InvalidJsonWebSignatureToken("invalid token format");
+
+            var header = JoseHeader.Parse(UTF8.GetString(splittedToken[0].FromBase64Url()));
+
+            // the algorithm must be the same to avoid vulnerabilities
+            if (this.algorithm.Name != header.Algorithm)
+                throw new InvalidJsonWebSignatureToken("Algorithms mismatch");
+
+            var payload = UTF8.GetString(splittedToken[1].FromBase64Url());
+            var signature = splittedToken.Skip(2).Single().FromBase64Url();
+            var contentToSign = string.Join(".", splittedToken.Take(2));
+
+            if (!await this.algorithm.VerifyAsync(header, contentToSign, signature))
+                throw new InvalidJsonWebSignatureToken("signatures mismatch");
+
+            return JsonWebToken.Parse(payload);
         }
 
         public void Dispose()

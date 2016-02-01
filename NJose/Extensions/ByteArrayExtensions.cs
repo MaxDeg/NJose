@@ -15,6 +15,7 @@
 ******************************************************************************/
 
 using System;
+using System.Text;
 
 namespace NJose.Extensions
 {
@@ -33,7 +34,11 @@ namespace NJose.Extensions
             if (buffer == null || buffer.Length == 0)
                 return string.Empty;
 
-            return ToBase64(buffer).TrimEnd(new[] { '=' });
+            var encoded = new StringBuilder(ToBase64(buffer).TrimEnd(new[] { '=' }));
+            encoded.Replace("+", "-");
+            encoded.Replace("/", "_");
+
+            return encoded.ToString();
         }
     }
 }

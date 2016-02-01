@@ -15,73 +15,53 @@
 ******************************************************************************/
 
 using Newtonsoft.Json;
+using NJose.JsonSerialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace NJose
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public sealed class JsonWebToken
     {
+        private static string[] reservedClaimNames = new[] { "iss", "sub", "aud", "exp", "nbf", "iat", "jti" };
+
         private readonly Dictionary<string, object> claims = new Dictionary<string, object>();
+
+        [JsonProperty("aud")]
+        [JsonConverter(typeof(CompactSingleItemCollectionConverter<string>))]
+        private readonly ISet<string> audiences;
 
         public JsonWebToken()
         {
-            this.InitStandardClaims();
-            this.claims["iat"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            this.claims["jti"] = Guid.NewGuid().ToString();
+            this.audiences = new HashSet<string>();
+            this.IssuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            this.Id = Guid.NewGuid().ToString();
         }
 
-        public JsonWebToken(string token)
+        [JsonProperty("iss")]
+        public string Issuer { get; set; }
+
+        [JsonProperty("sub")]
+        public string Subject { get; set; }
+
+        public ISet<string> Audience
         {
-            if (token == null)
-                throw new ArgumentNullException(nameof(token));
-
-            this.InitStandardClaims();
-
-            foreach (var pair in JsonConvert.DeserializeObject<Dictionary<string, object>>(token))
-                this.claims[pair.Key] = pair.Value;
+            get { return this.audiences; }
         }
 
-        public string Issuer
-        {
-            get { return (string)this.claims["iss"]; }
-            set { this.claims["iss"] = value; }
-        }
+        [JsonProperty("exp")]
+        public long? ExpirationTime { get; set; }
 
-        public string Subject
-        {
-            get { return (string)this.claims["sub"]; }
-            set { this.claims["sub"] = value; }
-        }
+        [JsonProperty("nbf")]
+        public long? NotBefore { get; set; }
 
-        // Aray or single value ... need converter
-        public IList<string> Audience
-        {
-            get { return (IList<string>)this.claims["aud"]; }
-        }
+        [JsonProperty("iat")]
+        public long IssuedAt { get; }
 
-        public long? ExpirationTime
-        {
-            get { return (long?)this.claims["exp"]; }
-            set { this.claims["exp"] = value; }
-        }
-
-        public long? NotBefore
-        {
-            get { return (long?)this.claims["nbf"]; }
-            set { this.claims["nbf"] = value; }
-        }
-
-        public long IssuedAt
-        {
-            get { return (long)this.claims["iat"]; }
-        }
-
-        public string Id
-        {
-            get { return (string)this.claims["jti"]; }
-        }
+        [JsonProperty("jti")]
+        public string Id { get; }
 
         public bool IsValid
         {
@@ -94,8 +74,24 @@ namespace NJose
             }
         }
 
+        public static JsonWebToken Parse(string token)
+        {
+            if (token == null)
+                throw new ArgumentNullException(nameof(token));
+
+            var jwToken = JsonConvert.DeserializeObject<JsonWebToken>(token, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                ContractResolver = new IgnoreEmptyCollectionContractResolver()
+            });
+
+            return jwToken;
+        }
+
         public void AddClaim(string key, object value)
         {
+            if (reservedClaimNames.Contains(key))
+                throw new ArgumentException("Cannot use reserved key with this method. User property instead", nameof(key));
             if (this.claims.ContainsKey(key))
                 throw new ArgumentException("Claim with key " + key + " is already present in the JsonWebToken", nameof(key));
 
@@ -108,7 +104,7 @@ namespace NJose
                 throw new KeyNotFoundException("Claim with key " + key + " not found in the JsonWebToken");
         }
 
-        public object FindClaim<TType>(string key)
+        public TType FindClaim<TType>(string key)
         {
             object value;
 
@@ -120,18 +116,11 @@ namespace NJose
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this.claims.Where(c => c.Value != null).ToDictionary(c => c.Key, c => c.Value));
-        }
-
-        private void InitStandardClaims()
-        {
-            this.claims["iss"] = null;
-            this.claims["sub"] = null;
-            this.claims["aud"] = new List<string>();
-            this.claims["exp"] = null;
-            this.claims["nbf"] = null;
-            this.claims["iat"] = null;
-            this.claims["jti"] = null;
+            return JsonConvert.SerializeObject(this, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                ContractResolver = new IgnoreEmptyCollectionContractResolver()
+            });
         }
     }
 }

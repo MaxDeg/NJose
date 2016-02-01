@@ -128,5 +128,56 @@ namespace NJose.Test
 
             Assert.AreEqual(token.ToJson(), deserializedToken.ToJson());
         }
+
+        [TestMethod]
+        public async Task Verify_RS256_Algorithm_Serialization()
+        {
+            var keySet = await JWKSet.GetAsync(this.keySetUri);
+            var key = keySet["rsa-256"];
+
+            var token = new JsonWebToken { Issuer = "joe", ExpirationTime = 1300819380 };
+            token.AddClaim("http://example.com/is_root", true);
+            var header = new JoseHeader() { JwkSetUrl = this.keySetUri, KeyId = "rsa-256" };
+
+            var serializer = new JWSCompactSerializer(new RS256Algorithm(privateKey: key));
+            var strToken = serializer.Serialize(token.ToJson(), header);
+            var deserializedToken = await serializer.DeserializeAsync(strToken);
+
+            Assert.AreEqual(token.ToJson(), deserializedToken.ToJson());
+        }
+
+        [TestMethod]
+        public async Task Verify_RS384_Algorithm_Serialization()
+        {
+            var keySet = await JWKSet.GetAsync(this.keySetUri);
+            var key = keySet["rsa-384"];
+
+            var token = new JsonWebToken { Issuer = "joe", ExpirationTime = 1300819380 };
+            token.AddClaim("http://example.com/is_root", true);
+            var header = new JoseHeader() { JwkSetUrl = this.keySetUri, KeyId = "rsa-384" };
+
+            var serializer = new JWSCompactSerializer(new RS384Algorithm(privateKey: key));
+            var strToken = serializer.Serialize(token.ToJson(), header);
+            var deserializedToken = await serializer.DeserializeAsync(strToken);
+
+            Assert.AreEqual(token.ToJson(), deserializedToken.ToJson());
+        }
+
+        [TestMethod]
+        public async Task Verify_RS512_Algorithm_Serialization()
+        {
+            var keySet = await JWKSet.GetAsync(this.keySetUri);
+            var key = keySet["rsa-512"];
+
+            var token = new JsonWebToken { Issuer = "joe", ExpirationTime = 1300819380 };
+            token.AddClaim("http://example.com/is_root", true);
+            var header = new JoseHeader() { JwkSetUrl = this.keySetUri, KeyId = "rsa-512" };
+
+            var serializer = new JWSCompactSerializer(new RS512Algorithm(privateKey: key));
+            var strToken = serializer.Serialize(token.ToJson(), header);
+            var deserializedToken = await serializer.DeserializeAsync(strToken);
+
+            Assert.AreEqual(token.ToJson(), deserializedToken.ToJson());
+        }
     }
 }
